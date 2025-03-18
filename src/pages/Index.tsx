@@ -1,13 +1,39 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useEffect } from 'react';
+import Hero from '@/components/Hero';
+import Portfolio from '@/components/Portfolio';
+import Career from '@/components/Career';
+import Contact from '@/components/Contact';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 const Index = () => {
+  // Scroll to element if URL has hash
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const id = hash.substring(1);
+      const element = document.getElementById(id);
+      if (element) {
+        setTimeout(() => {
+          window.scrollTo({
+            top: element.offsetTop - 80,
+            behavior: 'smooth'
+          });
+        }, 100);
+      }
+    }
+  }, []);
+  
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <>
+      <Navbar />
+      <Hero />
+      <Portfolio />
+      <Career />
+      <Contact />
+      <Footer />
+    </>
   );
 };
 
