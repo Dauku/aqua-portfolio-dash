@@ -1,8 +1,8 @@
-
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from '@/utils/animations';
 import { Briefcase, GraduationCap, Award } from 'lucide-react';
+import { Badge } from './ui/badge';
 
 // Career timeline data
 const careerData = [
@@ -63,14 +63,42 @@ const careerData = [
   },
 ];
 
-// Skills data
-const skills = [
-  { name: 'Frontend Development', level: 95 },
-  { name: 'UI/UX Design', level: 90 },
-  { name: 'Backend Development', level: 75 },
-  { name: 'Mobile Development', level: 70 },
-  { name: 'Project Management', level: 80 },
-];
+// Categorized skills data
+const skillsData = {
+  web: [
+    { name: 'HTML', icon: 'html' },
+    { name: 'CSS', icon: 'css' },
+    { name: 'JavaScript', icon: 'javascript' },
+    { name: 'PHP', icon: 'php' },
+    { name: 'SQL', icon: 'sql' },
+    { name: 'Bootstrap', icon: 'bootstrap' },
+    { name: 'Bubble.io', icon: 'bookmark' },
+    { name: 'Figma', icon: 'figma' },
+  ],
+  api: [
+    { name: 'API Integration', icon: 'api' },
+    { name: 'Postman', icon: 'postman' },
+    { name: 'N8N', icon: 'workflow' },
+    { name: 'OpenAI', icon: 'brain' },
+  ],
+  software: [
+    { name: 'C++', icon: 'code' },
+    { name: 'C#', icon: 'hash' },
+    { name: 'Unity', icon: 'unity' },
+    { name: 'Arduino', icon: 'arduino' },
+    { name: 'Java', icon: 'java' },
+  ],
+  data: [
+    { name: 'BigQuery', icon: 'database' },
+    { name: 'Metabase', icon: 'bar-chart' },
+    { name: 'Airtable', icon: 'table' },
+    { name: 'Airbyte', icon: 'database' },
+  ],
+  other: [
+    { name: 'Network', icon: 'network' },
+    { name: 'Project Management', icon: 'kanban' },
+  ]
+};
 
 const Career = () => {
   const [filter, setFilter] = useState('all');
@@ -130,14 +158,46 @@ const Career = () => {
         <div className="mt-24">
           <h3 className="text-2xl font-bold text-center mb-12">Skills & Expertise</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 max-w-4xl mx-auto">
-            {skills.map((skill, index) => (
-              <SkillBar 
-                key={skill.name} 
-                skill={skill} 
-                index={index} 
-              />
-            ))}
+          <div className="max-w-5xl mx-auto">
+            {/* Web Skills */}
+            <SkillCategory 
+              title="Web Development" 
+              skills={skillsData.web} 
+              isInView={isInView} 
+              delay={0} 
+            />
+            
+            {/* API Skills */}
+            <SkillCategory 
+              title="API & Integration" 
+              skills={skillsData.api} 
+              isInView={isInView} 
+              delay={0.2} 
+            />
+            
+            {/* Software Skills */}
+            <SkillCategory 
+              title="Software Development" 
+              skills={skillsData.software} 
+              isInView={isInView} 
+              delay={0.4} 
+            />
+            
+            {/* Data Skills */}
+            <SkillCategory 
+              title="Data & Analytics" 
+              skills={skillsData.data} 
+              isInView={isInView} 
+              delay={0.6} 
+            />
+            
+            {/* Other Skills */}
+            <SkillCategory 
+              title="Other Skills" 
+              skills={skillsData.other} 
+              isInView={isInView} 
+              delay={0.8} 
+            />
           </div>
         </div>
       </div>
@@ -212,36 +272,91 @@ const TimelineItem = ({
   );
 };
 
-// Skill bar component
-const SkillBar = ({ 
-  skill, 
-  index 
+// Skill Category component
+const SkillCategory = ({ 
+  title, 
+  skills, 
+  isInView,
+  delay
 }: { 
-  skill: { name: string; level: number }; 
-  index: number;
+  title: string; 
+  skills: Array<{ name: string; icon: string }>; 
+  isInView: boolean;
+  delay: number;
 }) => {
-  const { ref, isInView } = useInView({ threshold: 0.1 });
+  const { ref, isInView: categoryInView } = useInView({ threshold: 0.1 });
   
   return (
     <motion.div
       ref={ref as React.RefObject<HTMLDivElement>}
       initial={{ opacity: 0, y: 20 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
-      className="space-y-2"
+      animate={categoryInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6, delay }}
+      className="mb-10"
     >
-      <div className="flex justify-between">
-        <span className="font-medium">{skill.name}</span>
-        <span className="text-sm text-muted-foreground">{skill.level}%</span>
+      <h4 className="text-xl font-semibold mb-4 text-aqua">{title}</h4>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {skills.map((skill, index) => (
+          <SkillIcon key={skill.name} skill={skill} index={index} isInView={categoryInView} />
+        ))}
       </div>
-      <div className="h-2 bg-muted rounded-full overflow-hidden">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={isInView ? { width: `${skill.level}%` } : {}}
-          transition={{ duration: 1, delay: 0.3 + index * 0.1 }}
-          className="h-full bg-aqua"
-        />
-      </div>
+    </motion.div>
+  );
+};
+
+// Individual skill icon component
+const SkillIcon = ({ 
+  skill, 
+  index,
+  isInView
+}: { 
+  skill: { name: string; icon: string }; 
+  index: number;
+  isInView: boolean;
+}) => {
+  // Dynamically import icons from lucide-react
+  const IconComponent = (() => {
+    try {
+      // We're using a simple approach here with a limited set of icons
+      const icons: any = {
+        html: '🌐',
+        css: '🎨',
+        javascript: '📜',
+        php: '🐘',
+        sql: '🗄️',
+        bootstrap: '🅱️',
+        figma: '🖌️',
+        bookmark: '📑',
+        api: '🔌',
+        postman: '📮',
+        workflow: '⚙️',
+        brain: '🧠',
+        code: '💻',
+        hash: '#️⃣',
+        unity: '🎮',
+        arduino: '🤖',
+        java: '☕',
+        database: '🗂️',
+        'bar-chart': '📊',
+        table: '📋',
+        network: '🌐',
+        kanban: '📋'
+      };
+      return () => <span className="text-2xl">{icons[skill.icon] || '🔧'}</span>;
+    } catch (error) {
+      return () => <span className="text-2xl">🔧</span>;
+    }
+  })();
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={isInView ? { opacity: 1, scale: 1 } : {}}
+      transition={{ duration: 0.4, delay: 0.1 + index * 0.05 }}
+      className="flex flex-col items-center justify-center p-4 bg-card rounded-lg border border-border hover:shadow-md transition-all hover:-translate-y-1 cursor-pointer"
+    >
+      <IconComponent />
+      <span className="mt-2 text-sm font-medium text-center">{skill.name}</span>
     </motion.div>
   );
 };
