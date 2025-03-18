@@ -3,42 +3,47 @@ import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from '@/utils/animations';
 import { ExternalLink, Github } from 'lucide-react';
+import { PortfolioItem } from '@/utils/airtable';
 
-// Initial portfolio data
-const portfolioItems = [
-  {
-    id: 1,
-    title: "E-Commerce Dashboard",
-    description: "A comprehensive dashboard for online retail management with real-time analytics and inventory tracking.",
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1000&auto=format&fit=crop",
-    tags: ["React", "Tailwind CSS", "Node.js"],
-    link: "#",
-    github: "#"
-  },
-  {
-    id: 2,
-    title: "Financial App UI",
-    description: "A clean, intuitive mobile banking application interface designed for optimal user experience.",
-    image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d?q=80&w=1000&auto=format&fit=crop",
-    tags: ["UI/UX", "Figma", "Swift"],
-    link: "#",
-    github: "#"
-  },
-  {
-    id: 3,
-    title: "Travel Agency Website",
-    description: "A responsive website for a travel agency with booking functionality and destination guides.",
-    image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1000&auto=format&fit=crop",
-    tags: ["TypeScript", "Next.js", "Prisma"],
-    link: "#",
-    github: "#"
-  },
-];
+type PortfolioProps = {
+  items?: PortfolioItem[];
+};
 
-// Tags for filtering
-const allTags = ["All", ...Array.from(new Set(portfolioItems.flatMap(item => item.tags)))];
+const Portfolio = ({ items = [] }: PortfolioProps) => {
+  // Use provided items or fallback to empty array
+  const portfolioItems = items.length > 0 ? items : [
+    {
+      id: "1",
+      title: "E-Commerce Dashboard",
+      description: "A comprehensive dashboard for online retail management with real-time analytics and inventory tracking.",
+      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1000&auto=format&fit=crop",
+      tags: ["React", "Tailwind CSS", "Node.js"],
+      link: "#",
+      github: "#"
+    },
+    {
+      id: "2",
+      title: "Financial App UI",
+      description: "A clean, intuitive mobile banking application interface designed for optimal user experience.",
+      image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d?q=80&w=1000&auto=format&fit=crop",
+      tags: ["UI/UX", "Figma", "Swift"],
+      link: "#",
+      github: "#"
+    },
+    {
+      id: "3",
+      title: "Travel Agency Website",
+      description: "A responsive website for a travel agency with booking functionality and destination guides.",
+      image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1000&auto=format&fit=crop",
+      tags: ["TypeScript", "Next.js", "Prisma"],
+      link: "#",
+      github: "#"
+    },
+  ];
 
-const Portfolio = () => {
+  // Generate tags for filtering from the portfolio items
+  const allTags = ["All", ...Array.from(new Set(portfolioItems.flatMap(item => item.tags)))];
+  
   const [selectedTag, setSelectedTag] = useState("All");
   const { ref, isInView } = useInView({ threshold: 0.1 });
   
@@ -98,7 +103,7 @@ const Portfolio = () => {
 };
 
 // Portfolio card component
-const PortfolioCard = ({ item, index }: { item: typeof portfolioItems[0], index: number }) => {
+const PortfolioCard = ({ item, index }: { item: PortfolioItem, index: number }) => {
   const { ref, isInView } = useInView({ threshold: 0.1 });
   
   return (

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { toast } from '@/components/ui/use-toast';
 import { 
   LogOut, 
   Home, 
@@ -12,81 +13,192 @@ import {
   Save,
   Image,
   Edit,
-  Trash2
+  Trash2,
+  Database,
+  Loader2,
+  Tool,
+  CheckCircle
 } from 'lucide-react';
 import { useAuthStore } from '@/utils/auth';
-
-// Mock data structure that would be editable in the backoffice
-const initialData = {
-  hero: {
-    title: 'Design Development Perfection',
-    subtitle: 'Creating elegant, functional digital experiences where design meets purpose and technology enables vision.',
-  },
-  portfolio: [
-    {
-      id: 1,
-      title: "E-Commerce Dashboard",
-      description: "A comprehensive dashboard for online retail management with real-time analytics and inventory tracking.",
-      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1000&auto=format&fit=crop",
-      tags: ["React", "Tailwind CSS", "Node.js"],
-    },
-    {
-      id: 2,
-      title: "Financial App UI",
-      description: "A clean, intuitive mobile banking application interface designed for optimal user experience.",
-      image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d?q=80&w=1000&auto=format&fit=crop",
-      tags: ["UI/UX", "Figma", "Swift"],
-    },
-    {
-      id: 3,
-      title: "Travel Agency Website",
-      description: "A responsive website for a travel agency with booking functionality and destination guides.",
-      image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1000&auto=format&fit=crop",
-      tags: ["TypeScript", "Next.js", "Prisma"],
-    },
-  ],
-  career: [
-    {
-      id: 1,
-      title: 'Senior Frontend Developer',
-      company: 'TechNova Solutions',
-      location: 'San Francisco, CA',
-      period: '2020 - Present',
-      description: 'Led the frontend development team in creating responsive, accessible web applications.',
-      type: 'work',
-    },
-    {
-      id: 2,
-      title: 'Master in Computer Science',
-      company: 'Stanford University',
-      location: 'Stanford, CA',
-      period: '2018 - 2020',
-      description: 'Specialized in Human-Computer Interaction and User Experience Design.',
-      type: 'education',
-    },
-  ],
-  contact: {
-    email: 'hello@example.com',
-    phone: '+1 (234) 567-890',
-    location: 'San Francisco, CA',
-  }
-};
+import { 
+  airtableService, 
+  HeroService, 
+  PortfolioService, 
+  CareerService, 
+  ContactService, 
+  SkillService,
+  HeroData,
+  PortfolioItem,
+  CareerItem,
+  ContactInfo,
+  SkillItem
+} from '@/utils/airtable';
+import { Input } from '@/components/ui/input';
 
 const BackOffice = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [data, setData] = useState(initialData);
-  const [editingItemId, setEditingItemId] = useState<number | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [data, setData] = useState<{
+    hero: HeroData;
+    portfolio: PortfolioItem[];
+    career: CareerItem[];
+    contact: ContactInfo;
+    skills: SkillItem[];
+  }>({
+    hero: {
+      title: '',
+      subtitle: '',
+    },
+    portfolio: [],
+    career: [],
+    contact: {
+      email: '',
+      phone: '',
+      location: '',
+    },
+    skills: []
+  });
   
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [apiKey, setApiKey] = useState(airtableService.getApiKey() || '');
+  const [baseId, setBaseId] = useState(airtableService.getBaseId() || '');
+  const [isConnected, setIsConnected] = useState(false);
+  const [isConfiguring, setIsConfiguring] = useState(false);
+
   const navigate = useNavigate();
   const { logout, user } = useAuthStore();
   
-  // Simulate loading saved data
+  // Function to connect to Airtable
+  const connectToAirtable = async () => {
+    setIsConfiguring(true);
+    
+    try {
+      airtableService.setApiKey(apiKey);
+      airtableService.setBaseId(baseId);
+      
+      // Test connection by attempting to fetch hero data
+      const hero = await HeroService.get();
+      setIsConnected(true);
+      toast({
+        title: "Connected to Airtable",
+        description: "Successfully connected to your Airtable base.",
+      });
+      
+      // Load all data
+      loadAllData();
+    } catch (error) {
+      console.error("Error connecting to Airtable:", error);
+      toast({
+        title: "Connection Failed",
+        description: "Could not connect to Airtable. Please check your API key and Base ID.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsConfiguring(false);
+    }
+  };
+  
+  // Load all data from Airtable
+  const loadAllData = async () => {
+    setIsLoading(true);
+    
+    try {
+      // Load hero data
+      const hero = await HeroService.get();
+      
+      // Load portfolio items
+      const portfolio = await PortfolioService.getAll();
+      
+      // Load career items
+      const career = await CareerService.getAll();
+      
+      // Load contact info
+      const contact = await ContactService.get();
+      
+      // Load skills
+      const skills = await SkillService.getAll();
+      
+      setData({
+        hero: hero || { title: 'Design Development Perfection', subtitle: 'Creating elegant, functional digital experiences where design meets purpose and technology enables vision.' },
+        portfolio: portfolio.length > 0 ? portfolio : [
+          {
+            title: "E-Commerce Dashboard",
+            description: "A comprehensive dashboard for online retail management with real-time analytics and inventory tracking.",
+            image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1000&auto=format&fit=crop",
+            tags: ["React", "Tailwind CSS", "Node.js"],
+            link: "#",
+            github: "#"
+          },
+          {
+            title: "Financial App UI",
+            description: "A clean, intuitive mobile banking application interface designed for optimal user experience.",
+            image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d?q=80&w=1000&auto=format&fit=crop",
+            tags: ["UI/UX", "Figma", "Swift"],
+            link: "#",
+            github: "#"
+          },
+          {
+            title: "Travel Agency Website",
+            description: "A responsive website for a travel agency with booking functionality and destination guides.",
+            image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1000&auto=format&fit=crop",
+            tags: ["TypeScript", "Next.js", "Prisma"],
+            link: "#",
+            github: "#"
+          }
+        ],
+        career: career.length > 0 ? career : [
+          {
+            title: 'Senior Frontend Developer',
+            company: 'TechNova Solutions',
+            location: 'San Francisco, CA',
+            period: '2020 - Present',
+            description: 'Led the frontend development team in creating responsive, accessible web applications.',
+            type: 'work',
+          },
+          {
+            title: 'Master in Computer Science',
+            company: 'Stanford University',
+            location: 'Stanford, CA',
+            period: '2018 - 2020',
+            description: 'Specialized in Human-Computer Interaction and User Experience Design.',
+            type: 'education',
+          }
+        ],
+        contact: contact || {
+          email: 'hello@example.com',
+          phone: '+1 (234) 567-890',
+          location: 'San Francisco, CA',
+        },
+        skills: skills
+      });
+      
+      setIsConnected(true);
+    } catch (error) {
+      console.error("Error loading data:", error);
+      toast({
+        title: "Failed to Load Data",
+        description: "Could not load data from Airtable. Please check your connection.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Initialize: check for stored API key and try to load data
   useEffect(() => {
-    const savedData = localStorage.getItem('portfolioData');
-    if (savedData) {
-      setData(JSON.parse(savedData));
+    const storedApiKey = airtableService.getApiKey();
+    const storedBaseId = airtableService.getBaseId();
+    
+    if (storedApiKey && storedBaseId) {
+      setApiKey(storedApiKey);
+      setBaseId(storedBaseId);
+      setIsConnected(true);
+      loadAllData();
+    } else {
+      setIsLoading(false);
     }
   }, []);
   
@@ -95,20 +207,75 @@ const BackOffice = () => {
     navigate('/');
   };
   
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!isConnected) {
+      toast({
+        title: "Not Connected",
+        description: "Please connect to Airtable first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSaving(true);
     
-    // Simulate saving to backend
-    setTimeout(() => {
-      localStorage.setItem('portfolioData', JSON.stringify(data));
-      setIsSaving(false);
+    try {
+      // Save hero data
+      await HeroService.save(data.hero);
+      
+      // Save all portfolio items
+      // For simplicity, we'll delete all and recreate
+      /*
+      for (const item of data.portfolio) {
+        if (item.id) {
+          await PortfolioService.delete(item.id);
+        }
+      }
+      
+      for (const item of data.portfolio) {
+        const { id, ...fields } = item;
+        await PortfolioService.save(fields);
+      }
+      */
+      
+      // Save each portfolio item individually
+      for (const item of data.portfolio) {
+        await PortfolioService.save(item);
+      }
+      
+      // Save each career item
+      for (const item of data.career) {
+        await CareerService.save(item);
+      }
+      
+      // Save contact info
+      await ContactService.save(data.contact);
+      
+      // Save each skill
+      for (const item of data.skills) {
+        await SkillService.save(item);
+      }
+      
       setSaveSuccess(true);
+      toast({
+        title: "Saved Successfully",
+        description: "All changes have been saved to Airtable.",
+      });
       
       // Hide success message after a delay
       setTimeout(() => {
         setSaveSuccess(false);
       }, 3000);
-    }, 800);
+    } catch (error) {
+      console.error("Error saving data:", error);
+      toast({
+        title: "Failed to Save",
+        description: "Could not save data to Airtable. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
   
   const handleChange = (section: string, field: string, value: string) => {
@@ -121,7 +288,7 @@ const BackOffice = () => {
     }));
   };
   
-  const handlePortfolioItemChange = (id: number, field: string, value: any) => {
+  const handlePortfolioItemChange = (id: string | undefined, field: string, value: any) => {
     setData(prev => ({
       ...prev,
       portfolio: prev.portfolio.map(item => 
@@ -130,7 +297,7 @@ const BackOffice = () => {
     }));
   };
   
-  const handleCareerItemChange = (id: number, field: string, value: string) => {
+  const handleCareerItemChange = (id: string | undefined, field: string, value: string) => {
     setData(prev => ({
       ...prev,
       career: prev.career.map(item => 
@@ -140,9 +307,7 @@ const BackOffice = () => {
   };
   
   const handleAddPortfolioItem = () => {
-    const newId = Math.max(0, ...data.portfolio.map(item => item.id)) + 1;
-    const newItem = {
-      id: newId,
+    const newItem: PortfolioItem = {
       title: "New Project",
       description: "Project description",
       image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=1000&auto=format&fit=crop",
@@ -154,24 +319,46 @@ const BackOffice = () => {
       portfolio: [...prev.portfolio, newItem]
     }));
     
-    setEditingItemId(newId);
+    setEditingItemId("new");
   };
   
-  const handleDeletePortfolioItem = (id: number) => {
-    setData(prev => ({
-      ...prev,
-      portfolio: prev.portfolio.filter(item => item.id !== id)
-    }));
+  const handleDeletePortfolioItem = async (id: string | undefined) => {
+    if (!id) {
+      setData(prev => ({
+        ...prev,
+        portfolio: prev.portfolio.filter(item => item.id !== id)
+      }));
+      return;
+    }
     
-    if (editingItemId === id) {
-      setEditingItemId(null);
+    try {
+      await PortfolioService.delete(id);
+      
+      setData(prev => ({
+        ...prev,
+        portfolio: prev.portfolio.filter(item => item.id !== id)
+      }));
+      
+      if (editingItemId === id) {
+        setEditingItemId(null);
+      }
+      
+      toast({
+        title: "Item Deleted",
+        description: "Portfolio item has been deleted.",
+      });
+    } catch (error) {
+      console.error("Error deleting portfolio item:", error);
+      toast({
+        title: "Failed to Delete",
+        description: "Could not delete portfolio item. Please try again.",
+        variant: "destructive",
+      });
     }
   };
   
   const handleAddCareerItem = () => {
-    const newId = Math.max(0, ...data.career.map(item => item.id)) + 1;
-    const newItem = {
-      id: newId,
+    const newItem: CareerItem = {
       title: 'New Position',
       company: 'Company Name',
       location: 'Location',
@@ -185,19 +372,113 @@ const BackOffice = () => {
       career: [...prev.career, newItem]
     }));
     
-    setEditingItemId(newId);
+    setEditingItemId("new");
   };
   
-  const handleDeleteCareerItem = (id: number) => {
-    setData(prev => ({
-      ...prev,
-      career: prev.career.filter(item => item.id !== id)
-    }));
+  const handleDeleteCareerItem = async (id: string | undefined) => {
+    if (!id) {
+      setData(prev => ({
+        ...prev,
+        career: prev.career.filter(item => item.id !== id)
+      }));
+      return;
+    }
     
-    if (editingItemId === id) {
-      setEditingItemId(null);
+    try {
+      await CareerService.delete(id);
+      
+      setData(prev => ({
+        ...prev,
+        career: prev.career.filter(item => item.id !== id)
+      }));
+      
+      if (editingItemId === id) {
+        setEditingItemId(null);
+      }
+      
+      toast({
+        title: "Item Deleted",
+        description: "Career item has been deleted.",
+      });
+    } catch (error) {
+      console.error("Error deleting career item:", error);
+      toast({
+        title: "Failed to Delete",
+        description: "Could not delete career item. Please try again.",
+        variant: "destructive",
+      });
     }
   };
+  
+  const handleAddSkillItem = () => {
+    const newItem: SkillItem = {
+      name: 'New Skill',
+      category: 'other',
+      logoSvg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
+    };
+    
+    setData(prev => ({
+      ...prev,
+      skills: [...prev.skills, newItem]
+    }));
+    
+    setEditingItemId("new");
+  };
+  
+  const handleSkillItemChange = (id: string | undefined, field: string, value: any) => {
+    setData(prev => ({
+      ...prev,
+      skills: prev.skills.map(item => 
+        item.id === id ? { ...item, [field]: value } : item
+      )
+    }));
+  };
+  
+  const handleDeleteSkillItem = async (id: string | undefined) => {
+    if (!id) {
+      setData(prev => ({
+        ...prev,
+        skills: prev.skills.filter(item => item.id !== id)
+      }));
+      return;
+    }
+    
+    try {
+      await SkillService.delete(id);
+      
+      setData(prev => ({
+        ...prev,
+        skills: prev.skills.filter(item => item.id !== id)
+      }));
+      
+      if (editingItemId === id) {
+        setEditingItemId(null);
+      }
+      
+      toast({
+        title: "Skill Deleted",
+        description: "Skill has been deleted.",
+      });
+    } catch (error) {
+      console.error("Error deleting skill:", error);
+      toast({
+        title: "Failed to Delete",
+        description: "Could not delete skill. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <p>Loading admin panel...</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen bg-background flex">
@@ -241,6 +522,16 @@ const BackOffice = () => {
           >
             <User className="h-5 w-5 mr-3" />
             Career
+          </button>
+          
+          <button
+            onClick={() => setActiveTab('skills')}
+            className={`w-full text-left p-3 rounded-md flex items-center transition-colors ${
+              activeTab === 'skills' ? 'bg-white/20' : 'hover:bg-white/10'
+            }`}
+          >
+            <Tool className="h-5 w-5 mr-3" />
+            Skills
           </button>
           
           <button
@@ -320,17 +611,17 @@ const BackOffice = () => {
         </button>
         
         <button
+          onClick={() => setActiveTab('skills')}
+          className={`p-2 rounded-md ${activeTab === 'skills' ? 'bg-white/20' : ''}`}
+        >
+          <Tool className="h-6 w-6" />
+        </button>
+        
+        <button
           onClick={() => setActiveTab('contact')}
           className={`p-2 rounded-md ${activeTab === 'contact' ? 'bg-white/20' : ''}`}
         >
           <Mail className="h-6 w-6" />
-        </button>
-        
-        <button
-          onClick={() => setActiveTab('settings')}
-          className={`p-2 rounded-md ${activeTab === 'settings' ? 'bg-white/20' : ''}`}
-        >
-          <Settings className="h-6 w-6" />
         </button>
       </div>
       
@@ -351,22 +642,42 @@ const BackOffice = () => {
                   Changes saved!
                 </motion.span>
               )}
-              <button
-                onClick={handleSave}
-                disabled={isSaving}
-                className="px-4 py-2 bg-aqua text-white rounded-md flex items-center transition-colors hover:bg-aqua/90 disabled:opacity-70"
-              >
-                {isSaving ? (
-                  <span>Saving...</span>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Changes
-                  </>
-                )}
-              </button>
+              {isConnected && (
+                <button
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className="px-4 py-2 bg-aqua text-white rounded-md flex items-center transition-colors hover:bg-aqua/90 disabled:opacity-70"
+                >
+                  {isSaving ? (
+                    <span className="flex items-center">
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </span>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Changes
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
+          
+          {/* Airtable Connection Notice */}
+          {!isConnected && activeTab !== 'settings' && (
+            <div className="bg-card shadow rounded-lg p-6 border border-border mb-6">
+              <h2 className="text-xl font-bold mb-4">Connect to Airtable</h2>
+              <p className="mb-4">Please go to Settings to configure your Airtable connection before editing content.</p>
+              <button
+                onClick={() => setActiveTab('settings')}
+                className="px-4 py-2 bg-aqua text-white rounded-md flex items-center transition-colors hover:bg-aqua/90"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Go to Settings
+              </button>
+            </div>
+          )}
           
           {/* Dashboard */}
           {activeTab === 'dashboard' && (
@@ -374,25 +685,39 @@ const BackOffice = () => {
               <h2 className="text-xl font-bold mb-6">Welcome to your Portfolio Admin</h2>
               <p className="mb-6">Here you can edit all of your portfolio content. Use the navigation to access different sections.</p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-muted p-6 rounded-lg">
-                  <Briefcase className="h-8 w-8 text-aqua mb-2" />
-                  <h3 className="font-bold text-lg mb-1">Portfolio</h3>
-                  <p className="text-sm text-muted-foreground">{data.portfolio.length} projects</p>
+              {isConnected ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-muted p-6 rounded-lg">
+                    <Briefcase className="h-8 w-8 text-aqua mb-2" />
+                    <h3 className="font-bold text-lg mb-1">Portfolio</h3>
+                    <p className="text-sm text-muted-foreground">{data.portfolio.length} projects</p>
+                  </div>
+                  
+                  <div className="bg-muted p-6 rounded-lg">
+                    <User className="h-8 w-8 text-aqua mb-2" />
+                    <h3 className="font-bold text-lg mb-1">Career</h3>
+                    <p className="text-sm text-muted-foreground">{data.career.length} entries</p>
+                  </div>
+                  
+                  <div className="bg-muted p-6 rounded-lg">
+                    <Tool className="h-8 w-8 text-aqua mb-2" />
+                    <h3 className="font-bold text-lg mb-1">Skills</h3>
+                    <p className="text-sm text-muted-foreground">{data.skills.length} skills</p>
+                  </div>
                 </div>
-                
+              ) : (
                 <div className="bg-muted p-6 rounded-lg">
-                  <User className="h-8 w-8 text-aqua mb-2" />
-                  <h3 className="font-bold text-lg mb-1">Career</h3>
-                  <p className="text-sm text-muted-foreground">{data.career.length} entries</p>
+                  <Database className="h-8 w-8 text-aqua mb-2" />
+                  <h3 className="font-bold text-lg mb-1">Airtable Connection</h3>
+                  <p className="text-sm text-muted-foreground mb-4">Connect to Airtable to manage your content</p>
+                  <button
+                    onClick={() => setActiveTab('settings')}
+                    className="px-4 py-2 bg-aqua text-white rounded-md text-sm"
+                  >
+                    Configure Connection
+                  </button>
                 </div>
-                
-                <div className="bg-muted p-6 rounded-lg">
-                  <Mail className="h-8 w-8 text-aqua mb-2" />
-                  <h3 className="font-bold text-lg mb-1">Messages</h3>
-                  <p className="text-sm text-muted-foreground">0 new messages</p>
-                </div>
-              </div>
+              )}
               
               <p className="mt-6 text-sm text-muted-foreground">
                 Last login: {new Date().toLocaleString()}
@@ -401,18 +726,18 @@ const BackOffice = () => {
           )}
           
           {/* Portfolio Section */}
-          {activeTab === 'portfolio' && (
+          {activeTab === 'portfolio' && isConnected && (
             <div>
               <div className="bg-card shadow rounded-lg p-6 border border-border mb-6">
                 <h2 className="text-xl font-bold mb-4">Hero Section</h2>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">Title</label>
-                    <input
+                    <Input
                       type="text"
                       value={data.hero.title}
                       onChange={(e) => handleChange('hero', 'title', e.target.value)}
-                      className="w-full px-4 py-2 border border-border rounded-md"
+                      className="w-full"
                     />
                   </div>
                   
@@ -441,7 +766,7 @@ const BackOffice = () => {
                 
                 <div className="space-y-6">
                   {data.portfolio.map((item) => (
-                    <div key={item.id} className="border border-border rounded-lg overflow-hidden">
+                    <div key={item.id || Math.random()} className="border border-border rounded-lg overflow-hidden">
                       <div className="p-4 bg-muted flex justify-between items-center">
                         <h3 className="font-medium">{item.title}</h3>
                         <div className="flex space-x-2">
@@ -464,11 +789,11 @@ const BackOffice = () => {
                         <div className="p-4 space-y-4">
                           <div>
                             <label className="block text-sm font-medium mb-1">Title</label>
-                            <input
+                            <Input
                               type="text"
                               value={item.title}
                               onChange={(e) => handlePortfolioItemChange(item.id, 'title', e.target.value)}
-                              className="w-full px-4 py-2 border border-border rounded-md"
+                              className="w-full"
                             />
                           </div>
                           
@@ -485,11 +810,11 @@ const BackOffice = () => {
                           <div>
                             <label className="block text-sm font-medium mb-1">Image URL</label>
                             <div className="flex">
-                              <input
+                              <Input
                                 type="text"
                                 value={item.image}
                                 onChange={(e) => handlePortfolioItemChange(item.id, 'image', e.target.value)}
-                                className="flex-1 px-4 py-2 border border-border rounded-l-md"
+                                className="flex-1 rounded-r-none"
                               />
                               <button className="bg-muted px-3 border-y border-r border-border rounded-r-md">
                                 <Image size={16} />
@@ -499,7 +824,7 @@ const BackOffice = () => {
                           
                           <div>
                             <label className="block text-sm font-medium mb-1">Tags (comma separated)</label>
-                            <input
+                            <Input
                               type="text"
                               value={item.tags.join(', ')}
                               onChange={(e) => handlePortfolioItemChange(
@@ -507,8 +832,30 @@ const BackOffice = () => {
                                 'tags', 
                                 e.target.value.split(',').map(tag => tag.trim())
                               )}
-                              className="w-full px-4 py-2 border border-border rounded-md"
+                              className="w-full"
                             />
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Live Link (optional)</label>
+                              <Input
+                                type="text"
+                                value={item.link || ''}
+                                onChange={(e) => handlePortfolioItemChange(item.id, 'link', e.target.value)}
+                                className="w-full"
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium mb-1">GitHub Link (optional)</label>
+                              <Input
+                                type="text"
+                                value={item.github || ''}
+                                onChange={(e) => handlePortfolioItemChange(item.id, 'github', e.target.value)}
+                                className="w-full"
+                              />
+                            </div>
                           </div>
                         </div>
                       )}
@@ -520,7 +867,7 @@ const BackOffice = () => {
           )}
           
           {/* Career Section */}
-          {activeTab === 'career' && (
+          {activeTab === 'career' && isConnected && (
             <div className="bg-card shadow rounded-lg p-6 border border-border">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold">Career Timeline</h2>
@@ -534,7 +881,7 @@ const BackOffice = () => {
               
               <div className="space-y-6">
                 {data.career.map((item) => (
-                  <div key={item.id} className="border border-border rounded-lg overflow-hidden">
+                  <div key={item.id || Math.random()} className="border border-border rounded-lg overflow-hidden">
                     <div className="p-4 bg-muted flex justify-between items-center">
                       <div>
                         <h3 className="font-medium">{item.title}</h3>
@@ -561,21 +908,21 @@ const BackOffice = () => {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium mb-1">Title</label>
-                            <input
+                            <Input
                               type="text"
                               value={item.title}
                               onChange={(e) => handleCareerItemChange(item.id, 'title', e.target.value)}
-                              className="w-full px-4 py-2 border border-border rounded-md"
+                              className="w-full"
                             />
                           </div>
                           
                           <div>
                             <label className="block text-sm font-medium mb-1">Company/Institution</label>
-                            <input
+                            <Input
                               type="text"
                               value={item.company}
                               onChange={(e) => handleCareerItemChange(item.id, 'company', e.target.value)}
-                              className="w-full px-4 py-2 border border-border rounded-md"
+                              className="w-full"
                             />
                           </div>
                         </div>
@@ -583,21 +930,21 @@ const BackOffice = () => {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium mb-1">Location</label>
-                            <input
+                            <Input
                               type="text"
                               value={item.location}
                               onChange={(e) => handleCareerItemChange(item.id, 'location', e.target.value)}
-                              className="w-full px-4 py-2 border border-border rounded-md"
+                              className="w-full"
                             />
                           </div>
                           
                           <div>
                             <label className="block text-sm font-medium mb-1">Period</label>
-                            <input
+                            <Input
                               type="text"
                               value={item.period}
                               onChange={(e) => handleCareerItemChange(item.id, 'period', e.target.value)}
-                              className="w-full px-4 py-2 border border-border rounded-md"
+                              className="w-full"
                             />
                           </div>
                         </div>
@@ -616,7 +963,7 @@ const BackOffice = () => {
                           <label className="block text-sm font-medium mb-1">Type</label>
                           <select
                             value={item.type}
-                            onChange={(e) => handleCareerItemChange(item.id, 'type', e.target.value)}
+                            onChange={(e) => handleCareerItemChange(item.id, 'type', e.target.value as 'work' | 'education' | 'achievement')}
                             className="w-full px-4 py-2 border border-border rounded-md"
                           >
                             <option value="work">Work</option>
@@ -631,40 +978,139 @@ const BackOffice = () => {
               </div>
             </div>
           )}
+
+          {/* Skills Section */}
+          {activeTab === 'skills' && isConnected && (
+            <div className="bg-card shadow rounded-lg p-6 border border-border">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold">Skills & Technologies</h2>
+                <button
+                  onClick={handleAddSkillItem}
+                  className="px-3 py-1 bg-aqua text-white rounded-md text-sm"
+                >
+                  Add Skill
+                </button>
+              </div>
+              
+              <div className="space-y-6">
+                {data.skills.map((item) => (
+                  <div key={item.id || Math.random()} className="border border-border rounded-lg overflow-hidden">
+                    <div className="p-4 bg-muted flex justify-between items-center">
+                      <div className="flex items-center">
+                        <div 
+                          className="w-8 h-8 mr-3 flex items-center justify-center"
+                          dangerouslySetInnerHTML={{ __html: item.logoSvg || '' }}
+                        />
+                        <h3 className="font-medium">{item.name}</h3>
+                        <span className="ml-2 px-2 py-0.5 bg-background text-xs rounded-full">
+                          {item.category}
+                        </span>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => setEditingItemId(editingItemId === item.id ? null : item.id)}
+                          className="p-1 hover:text-aqua"
+                        >
+                          <Edit size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSkillItem(item.id)}
+                          className="p-1 hover:text-destructive"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {editingItemId === item.id && (
+                      <div className="p-4 space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Name</label>
+                          <Input
+                            type="text"
+                            value={item.name}
+                            onChange={(e) => handleSkillItemChange(item.id, 'name', e.target.value)}
+                            className="w-full"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Category</label>
+                          <select
+                            value={item.category}
+                            onChange={(e) => handleSkillItemChange(item.id, 'category', e.target.value)}
+                            className="w-full px-4 py-2 border border-border rounded-md"
+                          >
+                            <option value="web">Web</option>
+                            <option value="api">API</option>
+                            <option value="software">Software</option>
+                            <option value="network">Network</option>
+                            <option value="data">Data</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium mb-1">SVG Logo</label>
+                          <textarea
+                            value={item.logoSvg || ''}
+                            onChange={(e) => handleSkillItemChange(item.id, 'logoSvg', e.target.value)}
+                            rows={4}
+                            className="w-full px-4 py-2 border border-border rounded-md font-mono text-sm"
+                            placeholder='<svg>...</svg>'
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium mb-1">Preview</label>
+                          <div className="border border-border rounded-md p-4 flex items-center justify-center">
+                            <div 
+                              className="w-16 h-16 text-primary"
+                              dangerouslySetInnerHTML={{ __html: item.logoSvg || '<svg></svg>' }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           
           {/* Contact Info Section */}
-          {activeTab === 'contact' && (
+          {activeTab === 'contact' && isConnected && (
             <div className="bg-card shadow rounded-lg p-6 border border-border">
               <h2 className="text-xl font-bold mb-6">Contact Information</h2>
               
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Email</label>
-                  <input
+                  <Input
                     type="email"
                     value={data.contact.email}
                     onChange={(e) => handleChange('contact', 'email', e.target.value)}
-                    className="w-full px-4 py-2 border border-border rounded-md"
+                    className="w-full"
                   />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium mb-1">Phone</label>
-                  <input
+                  <Input
                     type="text"
                     value={data.contact.phone}
                     onChange={(e) => handleChange('contact', 'phone', e.target.value)}
-                    className="w-full px-4 py-2 border border-border rounded-md"
+                    className="w-full"
                   />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium mb-1">Location</label>
-                  <input
+                  <Input
                     type="text"
                     value={data.contact.location}
                     onChange={(e) => handleChange('contact', 'location', e.target.value)}
-                    className="w-full px-4 py-2 border border-border rounded-md"
+                    className="w-full"
                   />
                 </div>
               </div>
@@ -673,37 +1119,96 @@ const BackOffice = () => {
           
           {/* Settings Section */}
           {activeTab === 'settings' && (
-            <div className="bg-card shadow rounded-lg p-6 border border-border">
-              <h2 className="text-xl font-bold mb-6">Account Settings</h2>
+            <div className="space-y-6">
+              <div className="bg-card shadow rounded-lg p-6 border border-border">
+                <h2 className="text-xl font-bold mb-6">Airtable Connection</h2>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Airtable API Key</label>
+                    <Input
+                      type="password"
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      className="w-full"
+                      placeholder="pat..."
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Your API key is stored locally and never shared.
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Airtable Base ID</label>
+                    <Input
+                      type="text"
+                      value={baseId}
+                      onChange={(e) => setBaseId(e.target.value)}
+                      className="w-full"
+                      placeholder="app..."
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Find your Base ID in the Airtable API documentation.
+                    </p>
+                  </div>
+                  
+                  <button
+                    onClick={connectToAirtable}
+                    disabled={isConfiguring || !apiKey || !baseId}
+                    className="px-4 py-2 bg-aqua text-white rounded-md flex items-center transition-colors hover:bg-aqua/90 disabled:opacity-70"
+                  >
+                    {isConfiguring ? (
+                      <span className="flex items-center">
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Connecting...
+                      </span>
+                    ) : isConnected ? (
+                      <span className="flex items-center">
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Connected
+                      </span>
+                    ) : (
+                      <span className="flex items-center">
+                        <Database className="h-4 w-4 mr-2" />
+                        Connect to Airtable
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
               
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={user?.email}
-                    disabled
-                    className="w-full px-4 py-2 border border-border rounded-md bg-muted"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">To change your email, please contact support.</p>
-                </div>
+              <div className="bg-card shadow rounded-lg p-6 border border-border">
+                <h2 className="text-xl font-bold mb-6">Account Settings</h2>
                 
-                <div>
-                  <label className="block text-sm font-medium mb-1">Password</label>
-                  <button
-                    className="px-4 py-2 border border-border rounded-md hover:bg-muted"
-                  >
-                    Change Password
-                  </button>
-                </div>
-                
-                <div className="pt-4 border-t border-border">
-                  <h3 className="text-lg font-medium mb-4">Danger Zone</h3>
-                  <button
-                    className="px-4 py-2 border border-destructive text-destructive rounded-md hover:bg-destructive/10"
-                  >
-                    Delete Account
-                  </button>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Email</label>
+                    <Input
+                      type="email"
+                      value={user?.email}
+                      disabled
+                      className="w-full bg-muted"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">To change your email, please contact support.</p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Password</label>
+                    <button
+                      className="px-4 py-2 border border-border rounded-md hover:bg-muted"
+                    >
+                      Change Password
+                    </button>
+                  </div>
+                  
+                  <div className="pt-4 border-t border-border">
+                    <h3 className="text-lg font-medium mb-4">Danger Zone</h3>
+                    <button
+                      className="px-4 py-2 border border-destructive text-destructive rounded-md hover:bg-destructive/10"
+                    >
+                      Delete Account
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

@@ -3,10 +3,21 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BackOfficeComponent from '@/components/BackOffice';
 import { useAuthStore } from '@/utils/auth';
+import { airtableService } from '@/utils/airtable';
 
 const BackOffice = () => {
   const { isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
+  
+  // Set the Airtable API key when the component mounts (if not already set)
+  useEffect(() => {
+    // This is a security risk in a real application but we're doing it for the demo
+    // In a real app, this would be handled securely on the server side
+    if (!airtableService.getApiKey()) {
+      // Using the API key provided by the user
+      airtableService.setApiKey("patLN8RdI0YEYkkeD.5697d7f1b8842e38b1ee8e3f3ce4fe4ecabc7a4699333a91e7787fe9715b2b29");
+    }
+  }, []);
   
   useEffect(() => {
     if (!isAuthenticated) {
