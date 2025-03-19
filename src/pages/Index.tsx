@@ -78,6 +78,24 @@ const Index = () => {
     }
   }, [heroError, portfolioError, careerError, contactError, skillsError]);
   
+  // Default values in case data is missing
+  const defaultHero = {
+    title: "Design Development Perfection",
+    subtitle: "Creating elegant, functional digital experiences where design meets purpose and technology enables vision."
+  };
+  
+  const defaultPortfolio = [];
+  
+  const defaultCareer = [];
+  
+  const defaultContact = {
+    email: "hello@example.com",
+    phone: "+1 (234) 567-890",
+    location: "San Francisco, CA"
+  };
+  
+  const defaultSkills = [];
+  
   return (
     <div className="bg-background text-foreground">
       <Navbar />
@@ -91,8 +109,8 @@ const Index = () => {
             </div>
           ) : (
             <Hero 
-              title={heroData?.title || "Design Development Perfection"} 
-              subtitle={heroData?.subtitle || "Creating elegant, functional digital experiences where design meets purpose and technology enables vision."} 
+              title={heroData?.title || defaultHero.title} 
+              subtitle={heroData?.subtitle || defaultHero.subtitle} 
             />
           )}
         </section>
@@ -109,7 +127,7 @@ const Index = () => {
               Portfolio
             </motion.h2>
             
-            <Portfolio items={portfolioData || []} />
+            <Portfolio items={portfolioData || defaultPortfolio} />
           </div>
         </section>
         
@@ -125,7 +143,7 @@ const Index = () => {
               Career & Skills
             </motion.h2>
             
-            <Career items={careerData || []} />
+            <Career items={careerData || defaultCareer} />
             
             <motion.h3 
               className="text-2xl font-bold mt-16 mb-8"
@@ -137,7 +155,7 @@ const Index = () => {
               Skills & Technologies
             </motion.h3>
             
-            <Skills items={skillsData || []} />
+            <Skills items={skillsData || defaultSkills} />
           </div>
         </section>
         
@@ -154,9 +172,9 @@ const Index = () => {
             </motion.h2>
             
             <Contact 
-              email={contactData?.email || "hello@example.com"} 
-              phone={contactData?.phone || "+1 (234) 567-890"} 
-              location={contactData?.location || "San Francisco, CA"} 
+              email={contactData?.email || defaultContact.email} 
+              phone={contactData?.phone || defaultContact.phone} 
+              location={contactData?.location || defaultContact.location} 
             />
           </div>
         </section>

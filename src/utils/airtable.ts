@@ -131,17 +131,24 @@ class AirtableService {
     return response.json();
   }
 
-  // Function to upload an image to a publicly accessible URL
-  // In a real app, this would use a proper service like S3, Cloudinary, etc.
+  // Simple utility to upload images (mock)
+  // In a real application, you'd use a service like Cloudinary, S3, etc.
   async uploadImage(file: File): Promise<string> {
-    // This is a mock function - in production, replace with actual upload logic
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Create a mock image URL - in production, this would be the URL returned by the upload service
-        const imageId = Math.random().toString(36).substring(2, 15);
-        const imageUrl = `https://example.com/images/${imageId}-${file.name}`;
-        resolve(imageUrl);
-      }, 1000);
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        // For this demo, we'll just return the data URL
+        // In a real app, you would upload to a storage service
+        if (typeof reader.result === 'string') {
+          resolve(reader.result);
+        } else {
+          reject(new Error('Failed to convert image to data URL'));
+        }
+      };
+      reader.onerror = () => {
+        reject(new Error('Failed to read image file'));
+      };
     });
   }
 }
@@ -196,12 +203,6 @@ export class HeroService {
   
   static async get(): Promise<HeroData | null> {
     try {
-      // First check local cache
-      const cachedData = localStorage.getItem(this.CACHE_KEY);
-      if (cachedData) {
-        return JSON.parse(cachedData);
-      }
-      
       const records = await airtableService.fetchRecords(this.TABLE_NAME);
       if (records.length === 0) return null;
       
@@ -212,17 +213,19 @@ export class HeroService {
         subtitle: record.fields.subtitle || '',
       };
       
-      // Save to local cache
+      // Save to local cache for offline access
       localStorage.setItem(this.CACHE_KEY, JSON.stringify(heroData));
       
       return heroData;
     } catch (error) {
       console.error('Error fetching hero data:', error);
+      
       // If API call fails, try to use cached data
       const cachedData = localStorage.getItem(this.CACHE_KEY);
       if (cachedData) {
         return JSON.parse(cachedData);
       }
+      
       return null;
     }
   }
@@ -266,12 +269,6 @@ export class PortfolioService {
   
   static async getAll(): Promise<PortfolioItem[]> {
     try {
-      // First check local cache
-      const cachedData = localStorage.getItem(this.CACHE_KEY);
-      if (cachedData) {
-        return JSON.parse(cachedData);
-      }
-      
       const records = await airtableService.fetchRecords(this.TABLE_NAME);
       const portfolioItems = records.map(record => ({
         id: record.id,
@@ -283,17 +280,19 @@ export class PortfolioService {
         github: record.fields.github || '',
       }));
       
-      // Save to local cache
+      // Save to local cache for offline access
       localStorage.setItem(this.CACHE_KEY, JSON.stringify(portfolioItems));
       
       return portfolioItems;
     } catch (error) {
       console.error('Error fetching portfolio items:', error);
+      
       // If API call fails, try to use cached data
       const cachedData = localStorage.getItem(this.CACHE_KEY);
       if (cachedData) {
         return JSON.parse(cachedData);
       }
+      
       return [];
     }
   }
@@ -327,19 +326,7 @@ export class PortfolioService {
       };
       
       // Update cache
-      const cachedData = localStorage.getItem(this.CACHE_KEY);
-      if (cachedData) {
-        const items = JSON.parse(cachedData);
-        const itemIndex = items.findIndex((i: PortfolioItem) => i.id === updatedItem.id);
-        if (itemIndex >= 0) {
-          items[itemIndex] = updatedItem;
-        } else {
-          items.push(updatedItem);
-        }
-        localStorage.setItem(this.CACHE_KEY, JSON.stringify(items));
-      } else {
-        localStorage.setItem(this.CACHE_KEY, JSON.stringify([updatedItem]));
-      }
+      await this.updateLocalCache(updatedItem);
       
       return updatedItem;
     } catch (error) {
@@ -352,7 +339,7 @@ export class PortfolioService {
     try {
       await airtableService.deleteRecord(this.TABLE_NAME, id);
       
-      // Update cache
+      // Update cache by removing the deleted item
       const cachedData = localStorage.getItem(this.CACHE_KEY);
       if (cachedData) {
         const items = JSON.parse(cachedData).filter((item: PortfolioItem) => item.id !== id);
@@ -365,6 +352,23 @@ export class PortfolioService {
       return false;
     }
   }
+  
+  private static async updateLocalCache(updatedItem: PortfolioItem): Promise<void> {
+    const cachedData = localStorage.getItem(this.CACHE_KEY);
+    if (cachedData) {
+      const items = JSON.parse(cachedData);
+      const itemIndex = items.findIndex((i: PortfolioItem) => i.id === updatedItem.id);
+      if (itemIndex >= 0) {
+        items[itemIndex] = updatedItem;
+      } else {
+        items.push(updatedItem);
+      }
+      localStorage.setItem(this.CACHE_KEY, JSON.stringify(items));
+    } else {
+      const allItems = await this.getAll();
+      localStorage.setItem(this.CACHE_KEY, JSON.stringify(allItems));
+    }
+  }
 }
 
 export class CareerService {
@@ -373,12 +377,6 @@ export class CareerService {
   
   static async getAll(): Promise<CareerItem[]> {
     try {
-      // First check local cache
-      const cachedData = localStorage.getItem(this.CACHE_KEY);
-      if (cachedData) {
-        return JSON.parse(cachedData);
-      }
-      
       const records = await airtableService.fetchRecords(this.TABLE_NAME);
       const careerItems = records.map(record => ({
         id: record.id,
@@ -390,17 +388,19 @@ export class CareerService {
         type: record.fields.type || 'work',
       }));
       
-      // Save to local cache
+      // Save to local cache for offline access
       localStorage.setItem(this.CACHE_KEY, JSON.stringify(careerItems));
       
       return careerItems;
     } catch (error) {
       console.error('Error fetching career items:', error);
+      
       // If API call fails, try to use cached data
       const cachedData = localStorage.getItem(this.CACHE_KEY);
       if (cachedData) {
         return JSON.parse(cachedData);
       }
+      
       return [];
     }
   }
@@ -434,19 +434,7 @@ export class CareerService {
       };
       
       // Update cache
-      const cachedData = localStorage.getItem(this.CACHE_KEY);
-      if (cachedData) {
-        const items = JSON.parse(cachedData);
-        const itemIndex = items.findIndex((i: CareerItem) => i.id === updatedItem.id);
-        if (itemIndex >= 0) {
-          items[itemIndex] = updatedItem;
-        } else {
-          items.push(updatedItem);
-        }
-        localStorage.setItem(this.CACHE_KEY, JSON.stringify(items));
-      } else {
-        localStorage.setItem(this.CACHE_KEY, JSON.stringify([updatedItem]));
-      }
+      await this.updateLocalCache(updatedItem);
       
       return updatedItem;
     } catch (error) {
@@ -459,7 +447,7 @@ export class CareerService {
     try {
       await airtableService.deleteRecord(this.TABLE_NAME, id);
       
-      // Update cache
+      // Update cache by removing the deleted item
       const cachedData = localStorage.getItem(this.CACHE_KEY);
       if (cachedData) {
         const items = JSON.parse(cachedData).filter((item: CareerItem) => item.id !== id);
@@ -472,6 +460,23 @@ export class CareerService {
       return false;
     }
   }
+  
+  private static async updateLocalCache(updatedItem: CareerItem): Promise<void> {
+    const cachedData = localStorage.getItem(this.CACHE_KEY);
+    if (cachedData) {
+      const items = JSON.parse(cachedData);
+      const itemIndex = items.findIndex((i: CareerItem) => i.id === updatedItem.id);
+      if (itemIndex >= 0) {
+        items[itemIndex] = updatedItem;
+      } else {
+        items.push(updatedItem);
+      }
+      localStorage.setItem(this.CACHE_KEY, JSON.stringify(items));
+    } else {
+      const allItems = await this.getAll();
+      localStorage.setItem(this.CACHE_KEY, JSON.stringify(allItems));
+    }
+  }
 }
 
 export class ContactService {
@@ -480,12 +485,6 @@ export class ContactService {
   
   static async get(): Promise<ContactInfo | null> {
     try {
-      // First check local cache
-      const cachedData = localStorage.getItem(this.CACHE_KEY);
-      if (cachedData) {
-        return JSON.parse(cachedData);
-      }
-      
       const records = await airtableService.fetchRecords(this.TABLE_NAME);
       if (records.length === 0) return null;
       
@@ -497,17 +496,19 @@ export class ContactService {
         location: record.fields.location || '',
       };
       
-      // Save to local cache
+      // Save to local cache for offline access
       localStorage.setItem(this.CACHE_KEY, JSON.stringify(contactData));
       
       return contactData;
     } catch (error) {
       console.error('Error fetching contact info:', error);
+      
       // If API call fails, try to use cached data
       const cachedData = localStorage.getItem(this.CACHE_KEY);
       if (cachedData) {
         return JSON.parse(cachedData);
       }
+      
       return null;
     }
   }
@@ -551,12 +552,6 @@ export class SkillService {
   
   static async getAll(): Promise<SkillItem[]> {
     try {
-      // First check local cache
-      const cachedData = localStorage.getItem(this.CACHE_KEY);
-      if (cachedData) {
-        return JSON.parse(cachedData);
-      }
-      
       const records = await airtableService.fetchRecords(this.TABLE_NAME);
       const skillItems = records.map(record => ({
         id: record.id,
@@ -565,17 +560,19 @@ export class SkillService {
         logoSvg: record.fields.logoSvg || '',
       }));
       
-      // Save to local cache
+      // Save to local cache for offline access
       localStorage.setItem(this.CACHE_KEY, JSON.stringify(skillItems));
       
       return skillItems;
     } catch (error) {
       console.error('Error fetching skills:', error);
+      
       // If API call fails, try to use cached data
       const cachedData = localStorage.getItem(this.CACHE_KEY);
       if (cachedData) {
         return JSON.parse(cachedData);
       }
+      
       return [];
     }
   }
@@ -603,19 +600,7 @@ export class SkillService {
       };
       
       // Update cache
-      const cachedData = localStorage.getItem(this.CACHE_KEY);
-      if (cachedData) {
-        const items = JSON.parse(cachedData);
-        const itemIndex = items.findIndex((i: SkillItem) => i.id === updatedItem.id);
-        if (itemIndex >= 0) {
-          items[itemIndex] = updatedItem;
-        } else {
-          items.push(updatedItem);
-        }
-        localStorage.setItem(this.CACHE_KEY, JSON.stringify(items));
-      } else {
-        localStorage.setItem(this.CACHE_KEY, JSON.stringify([updatedItem]));
-      }
+      await this.updateLocalCache(updatedItem);
       
       return updatedItem;
     } catch (error) {
@@ -628,7 +613,7 @@ export class SkillService {
     try {
       await airtableService.deleteRecord(this.TABLE_NAME, id);
       
-      // Update cache
+      // Update cache by removing the deleted item
       const cachedData = localStorage.getItem(this.CACHE_KEY);
       if (cachedData) {
         const items = JSON.parse(cachedData).filter((item: SkillItem) => item.id !== id);
@@ -639,6 +624,23 @@ export class SkillService {
     } catch (error) {
       console.error('Error deleting skill item:', error);
       return false;
+    }
+  }
+  
+  private static async updateLocalCache(updatedItem: SkillItem): Promise<void> {
+    const cachedData = localStorage.getItem(this.CACHE_KEY);
+    if (cachedData) {
+      const items = JSON.parse(cachedData);
+      const itemIndex = items.findIndex((i: SkillItem) => i.id === updatedItem.id);
+      if (itemIndex >= 0) {
+        items[itemIndex] = updatedItem;
+      } else {
+        items.push(updatedItem);
+      }
+      localStorage.setItem(this.CACHE_KEY, JSON.stringify(items));
+    } else {
+      const allItems = await this.getAll();
+      localStorage.setItem(this.CACHE_KEY, JSON.stringify(allItems));
     }
   }
 }
