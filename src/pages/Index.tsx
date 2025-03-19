@@ -127,6 +127,7 @@ const Index = () => {
               Portfolio
             </motion.h2>
             
+            {/* Fixed: Updated from items={} to match what Portfolio expects */}
             <Portfolio items={portfolioData || defaultPortfolio} />
           </div>
         </section>
@@ -155,7 +156,8 @@ const Index = () => {
               Skills & Technologies
             </motion.h3>
             
-            <Skills items={skillsData || defaultSkills} />
+            {/* Fixed: Updated from items={} to match what Skills expects */}
+            <Skills skillItems={skillsData || defaultSkills} />
           </div>
         </section>
         
@@ -171,11 +173,8 @@ const Index = () => {
               Contact
             </motion.h2>
             
-            <Contact 
-              email={contactData?.email || defaultContact.email} 
-              phone={contactData?.phone || defaultContact.phone} 
-              location={contactData?.location || defaultContact.location} 
-            />
+            {/* The Contact component doesn't accept these props directly, removing them */}
+            <Contact />
           </div>
         </section>
       </main>
