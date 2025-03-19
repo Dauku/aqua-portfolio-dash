@@ -54,7 +54,7 @@ const Navbar = () => {
             onClick={(e) => isHomePage && handleNavClick(e, 'home')}
           >
             <span className="text-primary mr-1 font-mono">&lt;</span>
-            <span>Portfolio</span>
+            <span>Taleex</span>
             <span className="text-primary ml-1 font-mono">/&gt;</span>
           </Link>
           
