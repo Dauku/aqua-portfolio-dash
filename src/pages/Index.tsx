@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -67,7 +66,6 @@ const Index = () => {
   });
   
   useEffect(() => {
-    // Show error notification if any data fetching fails
     const errors = [heroError, portfolioError, careerError, contactError, skillsError].filter(Boolean);
     if (errors.length > 0) {
       toast({
@@ -78,7 +76,6 @@ const Index = () => {
     }
   }, [heroError, portfolioError, careerError, contactError, skillsError]);
   
-  // Default values in case data is missing
   const defaultHero = {
     title: "Design Development Perfection",
     subtitle: "Creating elegant, functional digital experiences where design meets purpose and technology enables vision."
