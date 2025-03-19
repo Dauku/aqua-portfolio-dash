@@ -147,7 +147,7 @@ const PortfolioCard = ({ item, index }: { item: PortfolioItem, index: number }) 
       {/* Content */}
       <div className="p-6">
         <h3 className="text-lg font-bold mb-2 group-hover:text-aqua transition-colors">{item.title}</h3>
-        <p className="text-sm text-muted-foreground">{item.description}</p>
+        <p className="text-muted-foreground text-sm">{item.description}</p>
       </div>
     </motion.div>
   );
