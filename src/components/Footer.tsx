@@ -24,7 +24,7 @@ const Footer = () => {
           <div className="text-center md:text-left">
             <div className="text-xl font-bold flex items-center justify-center md:justify-start">
               <span className="mr-1 font-mono">&lt;</span>
-              <span>Portfolio</span>
+              <span>Taleex</span>
               <span className="ml-1 font-mono">/&gt;</span>
             </div>
             <p className="mt-2 text-sm text-primary-foreground/80 max-w-md">
