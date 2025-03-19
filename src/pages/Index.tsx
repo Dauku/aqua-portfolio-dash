@@ -109,7 +109,7 @@ const Index = () => {
               Portfolio
             </motion.h2>
             
-            <Portfolio portfolioItems={portfolioData || []} />
+            <Portfolio items={portfolioData || []} />
           </div>
         </section>
         
@@ -125,7 +125,7 @@ const Index = () => {
               Career & Skills
             </motion.h2>
             
-            <Career careerItems={careerData || []} />
+            <Career items={careerData || []} />
             
             <motion.h3 
               className="text-2xl font-bold mt-16 mb-8"
@@ -137,7 +137,7 @@ const Index = () => {
               Skills & Technologies
             </motion.h3>
             
-            <Skills skillItems={skillsData || []} />
+            <Skills items={skillsData || []} />
           </div>
         </section>
         

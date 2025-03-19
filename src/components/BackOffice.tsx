@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -19,7 +20,8 @@ import {
   CheckCircle,
   FileSpreadsheet,
   Table2,
-  Grid3X3
+  Grid3X3,
+  Upload
 } from 'lucide-react';
 import { useAuthStore } from '@/utils/auth';
 import { 
@@ -42,6 +44,8 @@ import {
   TabsList, 
   TabsTrigger 
 } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 const BackOffice = ({ airtableSchema }: { airtableSchema?: any }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -74,6 +78,8 @@ const BackOffice = ({ airtableSchema }: { airtableSchema?: any }) => {
   const [baseId, setBaseId] = useState(airtableService.getBaseId() || '');
   const [isConnected, setIsConnected] = useState(false);
   const [isConfiguring, setIsConfiguring] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [uploadingIndex, setUploadingIndex] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const { logout, user } = useAuthStore();
@@ -444,6 +450,47 @@ const BackOffice = ({ airtableSchema }: { airtableSchema?: any }) => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>, itemId: string) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      setSelectedImage(file);
+      setUploadingIndex(itemId);
+      
+      // For demo purposes, we'll use a mock upload service
+      // In a real app, you'd upload to a proper file server or cloud storage
+      mockFileUpload(file, itemId);
+    }
+  };
+
+  const mockFileUpload = (file: File, itemId: string) => {
+    // Create a mock loading state
+    toast({
+      title: "Uploading image...",
+      description: `Uploading ${file.name}`,
+    });
+
+    // Simulate upload time
+    setTimeout(() => {
+      // Create an object URL to simulate a successful upload
+      const imageUrl = URL.createObjectURL(file);
+      
+      // Update the portfolio item with the new image URL
+      setData(prev => ({
+        ...prev,
+        portfolio: prev.portfolio.map(item => 
+          item.id === itemId ? { ...item, image: imageUrl } : item
+        )
+      }));
+
+      setUploadingIndex(null);
+      
+      toast({
+        title: "Upload complete",
+        description: "Image uploaded successfully",
+      });
+    }, 1500);
   };
   
   const renderAirtableSchemaVisual = () => {
@@ -948,13 +995,55 @@ const BackOffice = ({ airtableSchema }: { airtableSchema?: any }) => {
                           </div>
                           
                           <div>
-                            <label className="block text-sm font-medium mb-1">Image URL</label>
-                            <Input
-                              value={item.image || ''}
-                              onChange={(e) => handlePortfolioItemChange(item.id, 'image', e.target.value)}
-                              placeholder="https://example.com/image.jpg"
-                              className="w-full"
-                            />
+                            <Label className="block text-sm font-medium mb-1">Project Image</Label>
+                            <div className="mt-1 flex items-start">
+                              {item.image && (
+                                <div className="relative h-24 w-24 rounded overflow-hidden mr-4 mb-2">
+                                  <img 
+                                    src={item.image} 
+                                    alt={item.title} 
+                                    className="h-full w-full object-cover"
+                                  />
+                                </div>
+                              )}
+                              
+                              <div className="flex-1">
+                                <div className="flex items-center">
+                                  <Label
+                                    htmlFor={`image-upload-${item.id || index}`}
+                                    className="cursor-pointer px-4 py-2 bg-muted hover:bg-muted/80 rounded-md inline-flex items-center text-sm font-medium transition-colors"
+                                  >
+                                    {uploadingIndex === item.id ? (
+                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    ) : (
+                                      <Upload className="h-4 w-4 mr-2" />
+                                    )}
+                                    {uploadingIndex === item.id ? "Uploading..." : "Upload Image"}
+                                  </Label>
+                                  <Input
+                                    id={`image-upload-${item.id || index}`}
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => handleImageUpload(e, item.id || "new")}
+                                  />
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1">Upload a JPG, PNG or WebP image</p>
+                                
+                                <div className="mt-2">
+                                  <Label htmlFor={`image-url-${item.id || index}`} className="text-xs font-medium">
+                                    Or enter image URL directly:
+                                  </Label>
+                                  <Input
+                                    id={`image-url-${item.id || index}`}
+                                    value={item.image || ''}
+                                    onChange={(e) => handlePortfolioItemChange(item.id, 'image', e.target.value)}
+                                    placeholder="https://example.com/image.jpg"
+                                    className="w-full mt-1"
+                                  />
+                                </div>
+                              </div>
+                            </div>
                           </div>
                           
                           <div>
@@ -1342,7 +1431,7 @@ const BackOffice = ({ airtableSchema }: { airtableSchema?: any }) => {
                     </p>
                   </div>
                   
-                  <button
+                  <Button
                     onClick={connectToAirtable}
                     disabled={isConfiguring || !apiKey || !baseId}
                     className="px-4 py-2 bg-aqua text-white rounded-md flex items-center transition-colors hover:bg-aqua/90 disabled:opacity-70"
@@ -1363,7 +1452,7 @@ const BackOffice = ({ airtableSchema }: { airtableSchema?: any }) => {
                         Connect to Airtable
                       </>
                     )}
-                  </button>
+                  </Button>
                 </div>
               </div>
               
