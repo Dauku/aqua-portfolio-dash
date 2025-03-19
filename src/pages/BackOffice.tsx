@@ -17,6 +17,11 @@ const BackOffice = () => {
       // Using the API key provided by the user
       airtableService.setApiKey("patLN8RdI0YEYkkeD.5697d7f1b8842e38b1ee8e3f3ce4fe4ecabc7a4699333a91e7787fe9715b2b29");
     }
+    
+    // Set a default base ID if not already set
+    if (!airtableService.getBaseId()) {
+      airtableService.setBaseId("appLvD79J5G25NeeQ");
+    }
   }, []);
   
   useEffect(() => {

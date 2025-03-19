@@ -1,70 +1,169 @@
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
+import { HeroService, PortfolioService, CareerService, ContactService, SkillService } from '@/utils/airtable';
+import { toast } from '@/components/ui/use-toast';
+
+import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import Portfolio from '@/components/Portfolio';
 import Career from '@/components/Career';
 import Contact from '@/components/Contact';
-import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { HeroService, PortfolioService, CareerService, ContactService, SkillService } from '@/utils/airtable';
-import { Loader2 } from 'lucide-react';
+import Skills from '@/components/Skills';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Index = () => {
-  const [isDataReady, setIsDataReady] = useState(false);
-  
-  const { data: heroData, isLoading: isHeroLoading } = useQuery({
+  const { 
+    data: heroData, 
+    isLoading: heroLoading,
+    error: heroError 
+  } = useQuery({
     queryKey: ['hero'],
     queryFn: () => HeroService.get(),
+    retry: 1
   });
   
-  const { data: portfolioData, isLoading: isPortfolioLoading } = useQuery({
+  const { 
+    data: portfolioData, 
+    isLoading: portfolioLoading,
+    error: portfolioError
+  } = useQuery({
     queryKey: ['portfolio'],
     queryFn: () => PortfolioService.getAll(),
+    retry: 1
   });
   
-  const { data: careerData, isLoading: isCareerLoading } = useQuery({
+  const { 
+    data: careerData, 
+    isLoading: careerLoading,
+    error: careerError
+  } = useQuery({
     queryKey: ['career'],
     queryFn: () => CareerService.getAll(),
+    retry: 1
   });
   
-  const { data: contactData, isLoading: isContactLoading } = useQuery({
+  const { 
+    data: contactData, 
+    isLoading: contactLoading,
+    error: contactError
+  } = useQuery({
     queryKey: ['contact'],
     queryFn: () => ContactService.get(),
+    retry: 1
   });
   
-  const { data: skillsData, isLoading: isSkillsLoading } = useQuery({
+  const { 
+    data: skillsData, 
+    isLoading: skillsLoading,
+    error: skillsError
+  } = useQuery({
     queryKey: ['skills'],
     queryFn: () => SkillService.getAll(),
+    retry: 1
   });
   
-  // Check if all data is loaded
   useEffect(() => {
-    if (!isHeroLoading && !isPortfolioLoading && !isCareerLoading && !isContactLoading && !isSkillsLoading) {
-      setIsDataReady(true);
+    // Show error notification if any data fetching fails
+    const errors = [heroError, portfolioError, careerError, contactError, skillsError].filter(Boolean);
+    if (errors.length > 0) {
+      toast({
+        title: "Error loading data",
+        description: "Some content couldn't be loaded. Please try again later.",
+        variant: "destructive",
+      });
     }
-  }, [isHeroLoading, isPortfolioLoading, isCareerLoading, isContactLoading, isSkillsLoading]);
-  
-  if (!isDataReady) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-          <p>Loading portfolio...</p>
-        </div>
-      </div>
-    );
-  }
+  }, [heroError, portfolioError, careerError, contactError, skillsError]);
   
   return (
-    <>
+    <div className="bg-background text-foreground">
       <Navbar />
-      <Hero data={heroData} />
-      <Portfolio items={portfolioData} />
-      <Career careerItems={careerData} skillItems={skillsData} />
-      <Contact data={contactData} />
+      
+      <main>
+        <section id="home" className="pt-16 md:pt-20">
+          {heroLoading ? (
+            <div className="container px-4 py-20">
+              <Skeleton className="h-16 w-3/4 mb-4" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+          ) : (
+            <Hero 
+              title={heroData?.title || "Design Development Perfection"} 
+              subtitle={heroData?.subtitle || "Creating elegant, functional digital experiences where design meets purpose and technology enables vision."} 
+            />
+          )}
+        </section>
+        
+        <section id="portfolio" className="py-20">
+          <div className="container px-4">
+            <motion.h2 
+              className="text-3xl md:text-4xl font-bold mb-8 text-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              Portfolio
+            </motion.h2>
+            
+            <Portfolio portfolioItems={portfolioData || []} />
+          </div>
+        </section>
+        
+        <section id="career" className="py-20 bg-muted/30">
+          <div className="container px-4">
+            <motion.h2 
+              className="text-3xl md:text-4xl font-bold mb-8 text-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              Career & Skills
+            </motion.h2>
+            
+            <Career careerItems={careerData || []} />
+            
+            <motion.h3 
+              className="text-2xl font-bold mt-16 mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              Skills & Technologies
+            </motion.h3>
+            
+            <Skills skillItems={skillsData || []} />
+          </div>
+        </section>
+        
+        <section id="contact" className="py-20">
+          <div className="container px-4">
+            <motion.h2 
+              className="text-3xl md:text-4xl font-bold mb-8 text-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              Contact
+            </motion.h2>
+            
+            <Contact 
+              email={contactData?.email || "hello@example.com"} 
+              phone={contactData?.phone || "+1 (234) 567-890"} 
+              location={contactData?.location || "San Francisco, CA"} 
+            />
+          </div>
+        </section>
+      </main>
+      
       <Footer />
-    </>
+    </div>
   );
 };
 

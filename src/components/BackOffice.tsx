@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -16,7 +15,7 @@ import {
   Trash2,
   Database,
   Loader2,
-  Tool,
+  Wrench,
   CheckCircle
 } from 'lucide-react';
 import { useAuthStore } from '@/utils/auth';
@@ -70,7 +69,6 @@ const BackOffice = () => {
   const navigate = useNavigate();
   const { logout, user } = useAuthStore();
   
-  // Function to connect to Airtable
   const connectToAirtable = async () => {
     setIsConfiguring(true);
     
@@ -78,7 +76,6 @@ const BackOffice = () => {
       airtableService.setApiKey(apiKey);
       airtableService.setBaseId(baseId);
       
-      // Test connection by attempting to fetch hero data
       const hero = await HeroService.get();
       setIsConnected(true);
       toast({
@@ -86,7 +83,6 @@ const BackOffice = () => {
         description: "Successfully connected to your Airtable base.",
       });
       
-      // Load all data
       loadAllData();
     } catch (error) {
       console.error("Error connecting to Airtable:", error);
@@ -100,24 +96,18 @@ const BackOffice = () => {
     }
   };
   
-  // Load all data from Airtable
   const loadAllData = async () => {
     setIsLoading(true);
     
     try {
-      // Load hero data
       const hero = await HeroService.get();
       
-      // Load portfolio items
       const portfolio = await PortfolioService.getAll();
       
-      // Load career items
       const career = await CareerService.getAll();
       
-      // Load contact info
       const contact = await ContactService.get();
       
-      // Load skills
       const skills = await SkillService.getAll();
       
       setData({
@@ -187,7 +177,6 @@ const BackOffice = () => {
     }
   };
   
-  // Initialize: check for stored API key and try to load data
   useEffect(() => {
     const storedApiKey = airtableService.getApiKey();
     const storedBaseId = airtableService.getBaseId();
@@ -220,38 +209,18 @@ const BackOffice = () => {
     setIsSaving(true);
     
     try {
-      // Save hero data
       await HeroService.save(data.hero);
       
-      // Save all portfolio items
-      // For simplicity, we'll delete all and recreate
-      /*
-      for (const item of data.portfolio) {
-        if (item.id) {
-          await PortfolioService.delete(item.id);
-        }
-      }
-      
-      for (const item of data.portfolio) {
-        const { id, ...fields } = item;
-        await PortfolioService.save(fields);
-      }
-      */
-      
-      // Save each portfolio item individually
       for (const item of data.portfolio) {
         await PortfolioService.save(item);
       }
       
-      // Save each career item
       for (const item of data.career) {
         await CareerService.save(item);
       }
       
-      // Save contact info
       await ContactService.save(data.contact);
       
-      // Save each skill
       for (const item of data.skills) {
         await SkillService.save(item);
       }
@@ -262,7 +231,6 @@ const BackOffice = () => {
         description: "All changes have been saved to Airtable.",
       });
       
-      // Hide success message after a delay
       setTimeout(() => {
         setSaveSuccess(false);
       }, 3000);
@@ -482,7 +450,6 @@ const BackOffice = () => {
   
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
       <aside className="w-64 bg-aqua text-white shadow-lg hidden md:block">
         <div className="p-6 border-b border-white/10">
           <h2 className="text-xl font-bold flex items-center">
@@ -530,7 +497,7 @@ const BackOffice = () => {
               activeTab === 'skills' ? 'bg-white/20' : 'hover:bg-white/10'
             }`}
           >
-            <Tool className="h-5 w-5 mr-3" />
+            <Wrench className="h-5 w-5 mr-3" />
             Skills
           </button>
           
@@ -576,7 +543,6 @@ const BackOffice = () => {
         </div>
       </aside>
       
-      {/* Mobile Header */}
       <div className="md:hidden fixed top-0 inset-x-0 bg-aqua text-white p-4 flex items-center justify-between z-50">
         <h2 className="text-lg font-bold">BackOffice</h2>
         <button
@@ -587,7 +553,6 @@ const BackOffice = () => {
         </button>
       </div>
       
-      {/* Mobile Navigation */}
       <div className="md:hidden fixed bottom-0 inset-x-0 bg-aqua text-white p-2 flex justify-around z-50">
         <button
           onClick={() => setActiveTab('dashboard')}
@@ -614,7 +579,7 @@ const BackOffice = () => {
           onClick={() => setActiveTab('skills')}
           className={`p-2 rounded-md ${activeTab === 'skills' ? 'bg-white/20' : ''}`}
         >
-          <Tool className="h-6 w-6" />
+          <Wrench className="h-6 w-6" />
         </button>
         
         <button
@@ -625,10 +590,8 @@ const BackOffice = () => {
         </button>
       </div>
       
-      {/* Main Content */}
       <main className="flex-1 p-8 md:pt-8 pt-20 pb-24 md:pb-8 overflow-auto">
         <div className="max-w-5xl mx-auto">
-          {/* Save button and success message */}
           <div className="sticky top-0 z-40 py-4 bg-background flex justify-between items-center">
             <h1 className="text-2xl font-bold capitalize">{activeTab}</h1>
             <div className="flex items-center">
@@ -664,22 +627,19 @@ const BackOffice = () => {
             </div>
           </div>
           
-          {/* Airtable Connection Notice */}
           {!isConnected && activeTab !== 'settings' && (
             <div className="bg-card shadow rounded-lg p-6 border border-border mb-6">
               <h2 className="text-xl font-bold mb-4">Connect to Airtable</h2>
               <p className="mb-4">Please go to Settings to configure your Airtable connection before editing content.</p>
               <button
                 onClick={() => setActiveTab('settings')}
-                className="px-4 py-2 bg-aqua text-white rounded-md flex items-center transition-colors hover:bg-aqua/90"
+                className="px-4 py-2 bg-aqua text-white rounded-md text-sm"
               >
-                <Settings className="h-4 w-4 mr-2" />
-                Go to Settings
+                Configure Connection
               </button>
             </div>
           )}
           
-          {/* Dashboard */}
           {activeTab === 'dashboard' && (
             <div className="bg-card shadow rounded-lg p-6 border border-border">
               <h2 className="text-xl font-bold mb-6">Welcome to your Portfolio Admin</h2>
@@ -700,7 +660,7 @@ const BackOffice = () => {
                   </div>
                   
                   <div className="bg-muted p-6 rounded-lg">
-                    <Tool className="h-8 w-8 text-aqua mb-2" />
+                    <Wrench className="h-8 w-8 text-aqua mb-2" />
                     <h3 className="font-bold text-lg mb-1">Skills</h3>
                     <p className="text-sm text-muted-foreground">{data.skills.length} skills</p>
                   </div>
@@ -725,7 +685,6 @@ const BackOffice = () => {
             </div>
           )}
           
-          {/* Portfolio Section */}
           {activeTab === 'portfolio' && isConnected && (
             <div>
               <div className="bg-card shadow rounded-lg p-6 border border-border mb-6">
@@ -866,7 +825,6 @@ const BackOffice = () => {
             </div>
           )}
           
-          {/* Career Section */}
           {activeTab === 'career' && isConnected && (
             <div className="bg-card shadow rounded-lg p-6 border border-border">
               <div className="flex justify-between items-center mb-6">
@@ -978,8 +936,7 @@ const BackOffice = () => {
               </div>
             </div>
           )}
-
-          {/* Skills Section */}
+          
           {activeTab === 'skills' && isConnected && (
             <div className="bg-card shadow rounded-lg p-6 border border-border">
               <div className="flex justify-between items-center mb-6">
@@ -1078,7 +1035,6 @@ const BackOffice = () => {
             </div>
           )}
           
-          {/* Contact Info Section */}
           {activeTab === 'contact' && isConnected && (
             <div className="bg-card shadow rounded-lg p-6 border border-border">
               <h2 className="text-xl font-bold mb-6">Contact Information</h2>
@@ -1117,7 +1073,6 @@ const BackOffice = () => {
             </div>
           )}
           
-          {/* Settings Section */}
           {activeTab === 'settings' && (
             <div className="space-y-6">
               <div className="bg-card shadow rounded-lg p-6 border border-border">
