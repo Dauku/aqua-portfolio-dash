@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import BackOfficeComponent from '@/components/BackOffice';
 import { useAuthStore } from '@/utils/auth';
 import { airtableService } from '@/utils/airtable';
+import AIRTABLE_SCHEMA from '@/utils/airtableSchema';
 
 const BackOffice = () => {
   const { isAuthenticated } = useAuthStore();
@@ -34,7 +35,7 @@ const BackOffice = () => {
     return null;
   }
   
-  return <BackOfficeComponent />;
+  return <BackOfficeComponent airtableSchema={AIRTABLE_SCHEMA} />;
 };
 
 export default BackOffice;

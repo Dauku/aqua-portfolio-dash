@@ -16,7 +16,10 @@ import {
   Database,
   Loader2,
   Wrench,
-  CheckCircle
+  CheckCircle,
+  FileSpreadsheet,
+  Table2,
+  Grid3X3
 } from 'lucide-react';
 import { useAuthStore } from '@/utils/auth';
 import { 
@@ -33,8 +36,14 @@ import {
   SkillItem
 } from '@/utils/airtable';
 import { Input } from '@/components/ui/input';
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from "@/components/ui/tabs";
 
-const BackOffice = () => {
+const BackOffice = ({ airtableSchema }: { airtableSchema?: any }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [data, setData] = useState<{
     hero: HeroData;
@@ -437,6 +446,188 @@ const BackOffice = () => {
     }
   };
   
+  const renderAirtableSchemaVisual = () => {
+    return (
+      <div className="bg-card shadow rounded-lg p-6 border border-border mb-6">
+        <h2 className="text-xl font-bold mb-4">Airtable Schema Guide</h2>
+        <p className="mb-4">To use this application, set up your Airtable base with the following structure:</p>
+        
+        <div className="space-y-4">
+          <Tabs defaultValue="hero" className="w-full">
+            <TabsList className="grid grid-cols-5 mb-4">
+              <TabsTrigger value="hero">Hero</TabsTrigger>
+              <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
+              <TabsTrigger value="career">Career</TabsTrigger>
+              <TabsTrigger value="contact">Contact</TabsTrigger>
+              <TabsTrigger value="skills">Skills</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="hero" className="p-4 border rounded-md">
+              <div className="flex items-center mb-3">
+                <Table2 className="h-5 w-5 mr-2 text-aqua" />
+                <h3 className="font-bold">Hero Table (Single Record)</h3>
+              </div>
+              <div className="space-y-2 pl-7">
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">title</span>
+                  <span className="ml-2 text-muted-foreground">Single line text</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">subtitle</span>
+                  <span className="ml-2 text-muted-foreground">Long text</span>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="portfolio" className="p-4 border rounded-md">
+              <div className="flex items-center mb-3">
+                <Table2 className="h-5 w-5 mr-2 text-aqua" />
+                <h3 className="font-bold">Portfolio Table (Multiple Records)</h3>
+              </div>
+              <div className="space-y-2 pl-7">
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">title</span>
+                  <span className="ml-2 text-muted-foreground">Single line text</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">description</span>
+                  <span className="ml-2 text-muted-foreground">Long text</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">image</span>
+                  <span className="ml-2 text-muted-foreground">URL</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">tags</span>
+                  <span className="ml-2 text-muted-foreground">Long text - comma separated values</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">link</span>
+                  <span className="ml-2 text-muted-foreground">URL (optional)</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">github</span>
+                  <span className="ml-2 text-muted-foreground">URL (optional)</span>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="career" className="p-4 border rounded-md">
+              <div className="flex items-center mb-3">
+                <Table2 className="h-5 w-5 mr-2 text-aqua" />
+                <h3 className="font-bold">Career Table (Multiple Records)</h3>
+              </div>
+              <div className="space-y-2 pl-7">
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">title</span>
+                  <span className="ml-2 text-muted-foreground">Single line text</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">company</span>
+                  <span className="ml-2 text-muted-foreground">Single line text</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">location</span>
+                  <span className="ml-2 text-muted-foreground">Single line text</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">period</span>
+                  <span className="ml-2 text-muted-foreground">Single line text</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">description</span>
+                  <span className="ml-2 text-muted-foreground">Long text</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">type</span>
+                  <span className="ml-2 text-muted-foreground">Single select: work, education, achievement</span>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="contact" className="p-4 border rounded-md">
+              <div className="flex items-center mb-3">
+                <Table2 className="h-5 w-5 mr-2 text-aqua" />
+                <h3 className="font-bold">Contact Table (Single Record)</h3>
+              </div>
+              <div className="space-y-2 pl-7">
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">email</span>
+                  <span className="ml-2 text-muted-foreground">Email</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">phone</span>
+                  <span className="ml-2 text-muted-foreground">Phone</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">location</span>
+                  <span className="ml-2 text-muted-foreground">Single line text</span>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="skills" className="p-4 border rounded-md">
+              <div className="flex items-center mb-3">
+                <Table2 className="h-5 w-5 mr-2 text-aqua" />
+                <h3 className="font-bold">Skills Table (Multiple Records)</h3>
+              </div>
+              <div className="space-y-2 pl-7">
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">name</span>
+                  <span className="ml-2 text-muted-foreground">Single line text</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">category</span>
+                  <span className="ml-2 text-muted-foreground">Single select: web, api, software, network, data, other</span>
+                </div>
+                <div className="flex items-center text-sm">
+                  <Grid3X3 className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span className="font-medium">logoSvg</span>
+                  <span className="ml-2 text-muted-foreground">Long text - contains SVG code</span>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+          
+          <div className="bg-muted/50 p-4 rounded-md mt-4">
+            <h3 className="font-bold mb-2 flex items-center">
+              <FileSpreadsheet className="h-5 w-5 mr-2 text-aqua" />
+              Setup Instructions:
+            </h3>
+            <ol className="list-decimal pl-5 space-y-1 text-sm">
+              <li>Create a new Airtable base named "Portfolio Website"</li>
+              <li>Create the tables and fields listed above</li>
+              <li>Add at least one record to each table</li>
+              <li>Create a Personal Access Token in Airtable (<a href="https://airtable.com/create/tokens" target="_blank" rel="noopener noreferrer" className="text-aqua hover:underline">https://airtable.com/create/tokens</a>)</li>
+              <li>Set the correct permissions (data.records:read, data.records:write)</li>
+              <li>Find your base ID in the API documentation (it starts with "app")</li>
+              <li>Enter your API key and base ID in the application settings</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -641,537 +832,12 @@ const BackOffice = () => {
           )}
           
           {activeTab === 'dashboard' && (
-            <div className="bg-card shadow rounded-lg p-6 border border-border">
-              <h2 className="text-xl font-bold mb-6">Welcome to your Portfolio Admin</h2>
-              <p className="mb-6">Here you can edit all of your portfolio content. Use the navigation to access different sections.</p>
-              
-              {isConnected ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-muted p-6 rounded-lg">
-                    <Briefcase className="h-8 w-8 text-aqua mb-2" />
-                    <h3 className="font-bold text-lg mb-1">Portfolio</h3>
-                    <p className="text-sm text-muted-foreground">{data.portfolio.length} projects</p>
-                  </div>
-                  
-                  <div className="bg-muted p-6 rounded-lg">
-                    <User className="h-8 w-8 text-aqua mb-2" />
-                    <h3 className="font-bold text-lg mb-1">Career</h3>
-                    <p className="text-sm text-muted-foreground">{data.career.length} entries</p>
-                  </div>
-                  
-                  <div className="bg-muted p-6 rounded-lg">
-                    <Wrench className="h-8 w-8 text-aqua mb-2" />
-                    <h3 className="font-bold text-lg mb-1">Skills</h3>
-                    <p className="text-sm text-muted-foreground">{data.skills.length} skills</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-muted p-6 rounded-lg">
-                  <Database className="h-8 w-8 text-aqua mb-2" />
-                  <h3 className="font-bold text-lg mb-1">Airtable Connection</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Connect to Airtable to manage your content</p>
-                  <button
-                    onClick={() => setActiveTab('settings')}
-                    className="px-4 py-2 bg-aqua text-white rounded-md text-sm"
-                  >
-                    Configure Connection
-                  </button>
-                </div>
-              )}
-              
-              <p className="mt-6 text-sm text-muted-foreground">
-                Last login: {new Date().toLocaleString()}
-              </p>
-            </div>
-          )}
-          
-          {activeTab === 'portfolio' && isConnected && (
             <div>
-              <div className="bg-card shadow rounded-lg p-6 border border-border mb-6">
-                <h2 className="text-xl font-bold mb-4">Hero Section</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Title</label>
-                    <Input
-                      type="text"
-                      value={data.hero.title}
-                      onChange={(e) => handleChange('hero', 'title', e.target.value)}
-                      className="w-full"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Subtitle</label>
-                    <textarea
-                      value={data.hero.subtitle}
-                      onChange={(e) => handleChange('hero', 'subtitle', e.target.value)}
-                      rows={3}
-                      className="w-full px-4 py-2 border border-border rounded-md"
-                    />
-                  </div>
-                </div>
-              </div>
+              {renderAirtableSchemaVisual()}
               
               <div className="bg-card shadow rounded-lg p-6 border border-border">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-bold">Portfolio Projects</h2>
-                  <button
-                    onClick={handleAddPortfolioItem}
-                    className="px-3 py-1 bg-aqua text-white rounded-md text-sm"
-                  >
-                    Add Project
-                  </button>
-                </div>
+                <h2 className="text-xl font-bold mb-6">Welcome to your Portfolio Admin</h2>
+                <p className="mb-6">Here you can edit all of your portfolio content. Use the navigation to access different sections.</p>
                 
-                <div className="space-y-6">
-                  {data.portfolio.map((item) => (
-                    <div key={item.id || Math.random()} className="border border-border rounded-lg overflow-hidden">
-                      <div className="p-4 bg-muted flex justify-between items-center">
-                        <h3 className="font-medium">{item.title}</h3>
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => setEditingItemId(editingItemId === item.id ? null : item.id)}
-                            className="p-1 hover:text-aqua"
-                          >
-                            <Edit size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDeletePortfolioItem(item.id)}
-                            className="p-1 hover:text-destructive"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </div>
-                      
-                      {editingItemId === item.id && (
-                        <div className="p-4 space-y-4">
-                          <div>
-                            <label className="block text-sm font-medium mb-1">Title</label>
-                            <Input
-                              type="text"
-                              value={item.title}
-                              onChange={(e) => handlePortfolioItemChange(item.id, 'title', e.target.value)}
-                              className="w-full"
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm font-medium mb-1">Description</label>
-                            <textarea
-                              value={item.description}
-                              onChange={(e) => handlePortfolioItemChange(item.id, 'description', e.target.value)}
-                              rows={3}
-                              className="w-full px-4 py-2 border border-border rounded-md"
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm font-medium mb-1">Image URL</label>
-                            <div className="flex">
-                              <Input
-                                type="text"
-                                value={item.image}
-                                onChange={(e) => handlePortfolioItemChange(item.id, 'image', e.target.value)}
-                                className="flex-1 rounded-r-none"
-                              />
-                              <button className="bg-muted px-3 border-y border-r border-border rounded-r-md">
-                                <Image size={16} />
-                              </button>
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm font-medium mb-1">Tags (comma separated)</label>
-                            <Input
-                              type="text"
-                              value={item.tags.join(', ')}
-                              onChange={(e) => handlePortfolioItemChange(
-                                item.id, 
-                                'tags', 
-                                e.target.value.split(',').map(tag => tag.trim())
-                              )}
-                              className="w-full"
-                            />
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium mb-1">Live Link (optional)</label>
-                              <Input
-                                type="text"
-                                value={item.link || ''}
-                                onChange={(e) => handlePortfolioItemChange(item.id, 'link', e.target.value)}
-                                className="w-full"
-                              />
-                            </div>
-                            
-                            <div>
-                              <label className="block text-sm font-medium mb-1">GitHub Link (optional)</label>
-                              <Input
-                                type="text"
-                                value={item.github || ''}
-                                onChange={(e) => handlePortfolioItemChange(item.id, 'github', e.target.value)}
-                                className="w-full"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {activeTab === 'career' && isConnected && (
-            <div className="bg-card shadow rounded-lg p-6 border border-border">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold">Career Timeline</h2>
-                <button
-                  onClick={handleAddCareerItem}
-                  className="px-3 py-1 bg-aqua text-white rounded-md text-sm"
-                >
-                  Add Entry
-                </button>
-              </div>
-              
-              <div className="space-y-6">
-                {data.career.map((item) => (
-                  <div key={item.id || Math.random()} className="border border-border rounded-lg overflow-hidden">
-                    <div className="p-4 bg-muted flex justify-between items-center">
-                      <div>
-                        <h3 className="font-medium">{item.title}</h3>
-                        <p className="text-sm text-muted-foreground">{item.company}</p>
-                      </div>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => setEditingItemId(editingItemId === item.id ? null : item.id)}
-                          className="p-1 hover:text-aqua"
-                        >
-                          <Edit size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteCareerItem(item.id)}
-                          className="p-1 hover:text-destructive"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </div>
-                    
-                    {editingItemId === item.id && (
-                      <div className="p-4 space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium mb-1">Title</label>
-                            <Input
-                              type="text"
-                              value={item.title}
-                              onChange={(e) => handleCareerItemChange(item.id, 'title', e.target.value)}
-                              className="w-full"
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm font-medium mb-1">Company/Institution</label>
-                            <Input
-                              type="text"
-                              value={item.company}
-                              onChange={(e) => handleCareerItemChange(item.id, 'company', e.target.value)}
-                              className="w-full"
-                            />
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium mb-1">Location</label>
-                            <Input
-                              type="text"
-                              value={item.location}
-                              onChange={(e) => handleCareerItemChange(item.id, 'location', e.target.value)}
-                              className="w-full"
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm font-medium mb-1">Period</label>
-                            <Input
-                              type="text"
-                              value={item.period}
-                              onChange={(e) => handleCareerItemChange(item.id, 'period', e.target.value)}
-                              className="w-full"
-                            />
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Description</label>
-                          <textarea
-                            value={item.description}
-                            onChange={(e) => handleCareerItemChange(item.id, 'description', e.target.value)}
-                            rows={3}
-                            className="w-full px-4 py-2 border border-border rounded-md"
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Type</label>
-                          <select
-                            value={item.type}
-                            onChange={(e) => handleCareerItemChange(item.id, 'type', e.target.value as 'work' | 'education' | 'achievement')}
-                            className="w-full px-4 py-2 border border-border rounded-md"
-                          >
-                            <option value="work">Work</option>
-                            <option value="education">Education</option>
-                            <option value="achievement">Achievement</option>
-                          </select>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {activeTab === 'skills' && isConnected && (
-            <div className="bg-card shadow rounded-lg p-6 border border-border">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold">Skills & Technologies</h2>
-                <button
-                  onClick={handleAddSkillItem}
-                  className="px-3 py-1 bg-aqua text-white rounded-md text-sm"
-                >
-                  Add Skill
-                </button>
-              </div>
-              
-              <div className="space-y-6">
-                {data.skills.map((item) => (
-                  <div key={item.id || Math.random()} className="border border-border rounded-lg overflow-hidden">
-                    <div className="p-4 bg-muted flex justify-between items-center">
-                      <div className="flex items-center">
-                        <div 
-                          className="w-8 h-8 mr-3 flex items-center justify-center"
-                          dangerouslySetInnerHTML={{ __html: item.logoSvg || '' }}
-                        />
-                        <h3 className="font-medium">{item.name}</h3>
-                        <span className="ml-2 px-2 py-0.5 bg-background text-xs rounded-full">
-                          {item.category}
-                        </span>
-                      </div>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => setEditingItemId(editingItemId === item.id ? null : item.id)}
-                          className="p-1 hover:text-aqua"
-                        >
-                          <Edit size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteSkillItem(item.id)}
-                          className="p-1 hover:text-destructive"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </div>
-                    
-                    {editingItemId === item.id && (
-                      <div className="p-4 space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Name</label>
-                          <Input
-                            type="text"
-                            value={item.name}
-                            onChange={(e) => handleSkillItemChange(item.id, 'name', e.target.value)}
-                            className="w-full"
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Category</label>
-                          <select
-                            value={item.category}
-                            onChange={(e) => handleSkillItemChange(item.id, 'category', e.target.value)}
-                            className="w-full px-4 py-2 border border-border rounded-md"
-                          >
-                            <option value="web">Web</option>
-                            <option value="api">API</option>
-                            <option value="software">Software</option>
-                            <option value="network">Network</option>
-                            <option value="data">Data</option>
-                            <option value="other">Other</option>
-                          </select>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium mb-1">SVG Logo</label>
-                          <textarea
-                            value={item.logoSvg || ''}
-                            onChange={(e) => handleSkillItemChange(item.id, 'logoSvg', e.target.value)}
-                            rows={4}
-                            className="w-full px-4 py-2 border border-border rounded-md font-mono text-sm"
-                            placeholder='<svg>...</svg>'
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Preview</label>
-                          <div className="border border-border rounded-md p-4 flex items-center justify-center">
-                            <div 
-                              className="w-16 h-16 text-primary"
-                              dangerouslySetInnerHTML={{ __html: item.logoSvg || '<svg></svg>' }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {activeTab === 'contact' && isConnected && (
-            <div className="bg-card shadow rounded-lg p-6 border border-border">
-              <h2 className="text-xl font-bold mb-6">Contact Information</h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Email</label>
-                  <Input
-                    type="email"
-                    value={data.contact.email}
-                    onChange={(e) => handleChange('contact', 'email', e.target.value)}
-                    className="w-full"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1">Phone</label>
-                  <Input
-                    type="text"
-                    value={data.contact.phone}
-                    onChange={(e) => handleChange('contact', 'phone', e.target.value)}
-                    className="w-full"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1">Location</label>
-                  <Input
-                    type="text"
-                    value={data.contact.location}
-                    onChange={(e) => handleChange('contact', 'location', e.target.value)}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {activeTab === 'settings' && (
-            <div className="space-y-6">
-              <div className="bg-card shadow rounded-lg p-6 border border-border">
-                <h2 className="text-xl font-bold mb-6">Airtable Connection</h2>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Airtable API Key</label>
-                    <Input
-                      type="password"
-                      value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
-                      className="w-full"
-                      placeholder="pat..."
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Your API key is stored locally and never shared.
-                    </p>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Airtable Base ID</label>
-                    <Input
-                      type="text"
-                      value={baseId}
-                      onChange={(e) => setBaseId(e.target.value)}
-                      className="w-full"
-                      placeholder="app..."
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Find your Base ID in the Airtable API documentation.
-                    </p>
-                  </div>
-                  
-                  <button
-                    onClick={connectToAirtable}
-                    disabled={isConfiguring || !apiKey || !baseId}
-                    className="px-4 py-2 bg-aqua text-white rounded-md flex items-center transition-colors hover:bg-aqua/90 disabled:opacity-70"
-                  >
-                    {isConfiguring ? (
-                      <span className="flex items-center">
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Connecting...
-                      </span>
-                    ) : isConnected ? (
-                      <span className="flex items-center">
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Connected
-                      </span>
-                    ) : (
-                      <span className="flex items-center">
-                        <Database className="h-4 w-4 mr-2" />
-                        Connect to Airtable
-                      </span>
-                    )}
-                  </button>
-                </div>
-              </div>
-              
-              <div className="bg-card shadow rounded-lg p-6 border border-border">
-                <h2 className="text-xl font-bold mb-6">Account Settings</h2>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Email</label>
-                    <Input
-                      type="email"
-                      value={user?.email}
-                      disabled
-                      className="w-full bg-muted"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">To change your email, please contact support.</p>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Password</label>
-                    <button
-                      className="px-4 py-2 border border-border rounded-md hover:bg-muted"
-                    >
-                      Change Password
-                    </button>
-                  </div>
-                  
-                  <div className="pt-4 border-t border-border">
-                    <h3 className="text-lg font-medium mb-4">Danger Zone</h3>
-                    <button
-                      className="px-4 py-2 border border-destructive text-destructive rounded-md hover:bg-destructive/10"
-                    >
-                      Delete Account
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </main>
-    </div>
-  );
-};
+                {
 
-export default BackOffice;
