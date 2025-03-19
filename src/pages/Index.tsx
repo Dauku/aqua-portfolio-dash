@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -7,7 +8,7 @@ import { toast } from '@/components/ui/use-toast';
 
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
-import Portfolio, { PortfolioProps } from '@/components/Portfolio';
+import Portfolio from '@/components/Portfolio';
 import Career from '@/components/Career';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
