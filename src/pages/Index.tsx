@@ -8,7 +8,7 @@ import { toast } from '@/components/ui/use-toast';
 
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
-import Portfolio from '@/components/Portfolio';
+import Portfolio, { PortfolioProps } from '@/components/Portfolio';
 import Career from '@/components/Career';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
@@ -127,8 +127,15 @@ const Index = () => {
               Portfolio
             </motion.h2>
             
-            {/* Fixed: Updated from items={} to match what Portfolio expects */}
-            <Portfolio items={portfolioData || defaultPortfolio} />
+            {portfolioLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-64 w-full rounded-lg" />
+                ))}
+              </div>
+            ) : (
+              <Portfolio items={portfolioData || defaultPortfolio} />
+            )}
           </div>
         </section>
         
@@ -156,7 +163,6 @@ const Index = () => {
               Skills & Technologies
             </motion.h3>
             
-            {/* Fixed: Updated from items={} to match what Skills expects */}
             <Skills skillItems={skillsData || defaultSkills} />
           </div>
         </section>
@@ -173,7 +179,6 @@ const Index = () => {
               Contact
             </motion.h2>
             
-            {/* The Contact component doesn't accept these props directly, removing them */}
             <Contact />
           </div>
         </section>
