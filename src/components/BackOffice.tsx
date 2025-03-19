@@ -839,5 +839,541 @@ const BackOffice = ({ airtableSchema }: { airtableSchema?: any }) => {
                 <h2 className="text-xl font-bold mb-6">Welcome to your Portfolio Admin</h2>
                 <p className="mb-6">Here you can edit all of your portfolio content. Use the navigation to access different sections.</p>
                 
-                {
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-muted/40 p-4 rounded-lg flex flex-col items-center text-center">
+                    <Briefcase className="h-8 w-8 mb-2 text-aqua" />
+                    <h3 className="font-bold mb-1">Portfolio</h3>
+                    <p className="text-sm text-muted-foreground">Showcase your projects and work</p>
+                  </div>
+                  
+                  <div className="bg-muted/40 p-4 rounded-lg flex flex-col items-center text-center">
+                    <User className="h-8 w-8 mb-2 text-aqua" />
+                    <h3 className="font-bold mb-1">Career</h3>
+                    <p className="text-sm text-muted-foreground">Document your professional experience</p>
+                  </div>
+                  
+                  <div className="bg-muted/40 p-4 rounded-lg flex flex-col items-center text-center">
+                    <Wrench className="h-8 w-8 mb-2 text-aqua" />
+                    <h3 className="font-bold mb-1">Skills</h3>
+                    <p className="text-sm text-muted-foreground">Highlight your technical expertise</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {activeTab === 'portfolio' && (
+            <div>
+              <div className="bg-card shadow rounded-lg p-6 border border-border mb-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold">Hero Section</h2>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Title</label>
+                    <Input
+                      value={data.hero.title}
+                      onChange={(e) => handleChange('hero', 'title', e.target.value)}
+                      placeholder="Your hero title"
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Subtitle</label>
+                    <Input
+                      value={data.hero.subtitle}
+                      onChange={(e) => handleChange('hero', 'subtitle', e.target.value)}
+                      placeholder="Your hero subtitle"
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-card shadow rounded-lg p-6 border border-border">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold">Portfolio Items</h2>
+                  <button
+                    onClick={handleAddPortfolioItem}
+                    className="px-3 py-1 bg-aqua text-white rounded-md text-sm flex items-center"
+                  >
+                    <Edit className="h-4 w-4 mr-1" />
+                    Add Item
+                  </button>
+                </div>
+                
+                <div className="space-y-6">
+                  {data.portfolio.map((item, index) => (
+                    <div 
+                      key={item.id || index} 
+                      className="border rounded-md p-4 relative"
+                    >
+                      <div className="absolute top-4 right-4 flex space-x-2">
+                        <button
+                          onClick={() => setEditingItemId(editingItemId === item.id ? null : item.id)}
+                          className="p-1 bg-muted rounded-md hover:bg-muted/80"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeletePortfolioItem(item.id)}
+                          className="p-1 bg-red-100 text-red-600 rounded-md hover:bg-red-200"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                      
+                      {editingItemId === item.id ? (
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Title</label>
+                            <Input
+                              value={item.title || ''}
+                              onChange={(e) => handlePortfolioItemChange(item.id, 'title', e.target.value)}
+                              placeholder="Project title"
+                              className="w-full"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Description</label>
+                            <Input
+                              value={item.description || ''}
+                              onChange={(e) => handlePortfolioItemChange(item.id, 'description', e.target.value)}
+                              placeholder="Project description"
+                              className="w-full"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Image URL</label>
+                            <Input
+                              value={item.image || ''}
+                              onChange={(e) => handlePortfolioItemChange(item.id, 'image', e.target.value)}
+                              placeholder="https://example.com/image.jpg"
+                              className="w-full"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Tags (comma separated)</label>
+                            <Input
+                              value={Array.isArray(item.tags) ? item.tags.join(', ') : ''}
+                              onChange={(e) => handlePortfolioItemChange(
+                                item.id, 
+                                'tags', 
+                                e.target.value.split(',').map(tag => tag.trim())
+                              )}
+                              placeholder="React, TypeScript, UI/UX"
+                              className="w-full"
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Live Link (optional)</label>
+                              <Input
+                                value={item.link || ''}
+                                onChange={(e) => handlePortfolioItemChange(item.id, 'link', e.target.value)}
+                                placeholder="https://example.com"
+                                className="w-full"
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium mb-1">GitHub Link (optional)</label>
+                              <Input
+                                value={item.github || ''}
+                                onChange={(e) => handlePortfolioItemChange(item.id, 'github', e.target.value)}
+                                placeholder="https://github.com/username/repo"
+                                className="w-full"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="flex items-start">
+                            <div className="w-16 h-16 rounded overflow-hidden mr-4 bg-muted flex-shrink-0">
+                              {item.image ? (
+                                <img 
+                                  src={item.image} 
+                                  alt={item.title} 
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <Image className="h-6 w-6 text-muted-foreground" />
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <h3 className="font-bold">{item.title}</h3>
+                              <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {Array.isArray(item.tags) && item.tags.map((tag, tagIndex) => (
+                                  <span 
+                                    key={tagIndex} 
+                                    className="px-2 py-0.5 bg-muted text-xs rounded-full"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {activeTab === 'career' && (
+            <div>
+              <div className="bg-card shadow rounded-lg p-6 border border-border">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold">Career Timeline</h2>
+                  <button
+                    onClick={handleAddCareerItem}
+                    className="px-3 py-1 bg-aqua text-white rounded-md text-sm flex items-center"
+                  >
+                    <Edit className="h-4 w-4 mr-1" />
+                    Add Item
+                  </button>
+                </div>
+                
+                <div className="space-y-6">
+                  {data.career.map((item, index) => (
+                    <div 
+                      key={item.id || index} 
+                      className="border rounded-md p-4 relative"
+                    >
+                      <div className="absolute top-4 right-4 flex space-x-2">
+                        <button
+                          onClick={() => setEditingItemId(editingItemId === item.id ? null : item.id)}
+                          className="p-1 bg-muted rounded-md hover:bg-muted/80"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCareerItem(item.id)}
+                          className="p-1 bg-red-100 text-red-600 rounded-md hover:bg-red-200"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                      
+                      {editingItemId === item.id ? (
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Title</label>
+                              <Input
+                                value={item.title || ''}
+                                onChange={(e) => handleCareerItemChange(item.id, 'title', e.target.value)}
+                                placeholder="Position title"
+                                className="w-full"
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Company/Institution</label>
+                              <Input
+                                value={item.company || ''}
+                                onChange={(e) => handleCareerItemChange(item.id, 'company', e.target.value)}
+                                placeholder="Company name"
+                                className="w-full"
+                              />
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Location</label>
+                              <Input
+                                value={item.location || ''}
+                                onChange={(e) => handleCareerItemChange(item.id, 'location', e.target.value)}
+                                placeholder="City, Country"
+                                className="w-full"
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Period</label>
+                              <Input
+                                value={item.period || ''}
+                                onChange={(e) => handleCareerItemChange(item.id, 'period', e.target.value)}
+                                placeholder="2020 - Present"
+                                className="w-full"
+                              />
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Description</label>
+                            <Input
+                              value={item.description || ''}
+                              onChange={(e) => handleCareerItemChange(item.id, 'description', e.target.value)}
+                              placeholder="Brief description of role or achievement"
+                              className="w-full"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Type</label>
+                            <select
+                              value={item.type || 'work'}
+                              onChange={(e) => handleCareerItemChange(item.id, 'type', e.target.value)}
+                              className="w-full p-2 border rounded-md"
+                            >
+                              <option value="work">Work Experience</option>
+                              <option value="education">Education</option>
+                              <option value="achievement">Achievement/Award</option>
+                            </select>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <h3 className="font-bold">{item.title}</h3>
+                            <span className="text-sm text-muted-foreground">{item.period}</span>
+                          </div>
+                          <div className="flex items-center text-sm text-muted-foreground mb-2">
+                            <span>{item.company}</span>
+                            <span className="mx-2">•</span>
+                            <span>{item.location}</span>
+                          </div>
+                          <p className="text-sm">{item.description}</p>
+                          <div className="mt-2">
+                            <span 
+                              className={`px-2 py-0.5 text-xs rounded-full ${
+                                item.type === 'work' 
+                                  ? 'bg-blue-100 text-blue-800' 
+                                  : item.type === 'education'
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-purple-100 text-purple-800'
+                              }`}
+                            >
+                              {item.type === 'work' 
+                                ? 'Work' 
+                                : item.type === 'education' 
+                                  ? 'Education' 
+                                  : 'Achievement'}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {activeTab === 'contact' && (
+            <div>
+              <div className="bg-card shadow rounded-lg p-6 border border-border">
+                <h2 className="text-xl font-bold mb-6">Contact Information</h2>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Email Address</label>
+                    <Input
+                      value={data.contact.email}
+                      onChange={(e) => handleChange('contact', 'email', e.target.value)}
+                      placeholder="your.email@example.com"
+                      type="email"
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Phone Number</label>
+                    <Input
+                      value={data.contact.phone}
+                      onChange={(e) => handleChange('contact', 'phone', e.target.value)}
+                      placeholder="+1 (234) 567-890"
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Location</label>
+                    <Input
+                      value={data.contact.location}
+                      onChange={(e) => handleChange('contact', 'location', e.target.value)}
+                      placeholder="City, Country"
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {activeTab === 'skills' && (
+            <div>
+              <div className="bg-card shadow rounded-lg p-6 border border-border">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold">Skills & Technologies</h2>
+                  <button
+                    onClick={handleAddSkillItem}
+                    className="px-3 py-1 bg-aqua text-white rounded-md text-sm flex items-center"
+                  >
+                    <Edit className="h-4 w-4 mr-1" />
+                    Add Skill
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {data.skills.map((item, index) => (
+                    <div 
+                      key={item.id || index} 
+                      className="border rounded-md p-4 relative"
+                    >
+                      <div className="absolute top-4 right-4 flex space-x-2">
+                        <button
+                          onClick={() => setEditingItemId(editingItemId === item.id ? null : item.id)}
+                          className="p-1 bg-muted rounded-md hover:bg-muted/80"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSkillItem(item.id)}
+                          className="p-1 bg-red-100 text-red-600 rounded-md hover:bg-red-200"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                      
+                      {editingItemId === item.id ? (
+                        <div className="space-y-3 pt-6">
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Skill Name</label>
+                            <Input
+                              value={item.name || ''}
+                              onChange={(e) => handleSkillItemChange(item.id, 'name', e.target.value)}
+                              placeholder="JavaScript"
+                              className="w-full"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Category</label>
+                            <select
+                              value={item.category || 'other'}
+                              onChange={(e) => handleSkillItemChange(item.id, 'category', e.target.value)}
+                              className="w-full p-2 border rounded-md"
+                            >
+                              <option value="web">Web Development</option>
+                              <option value="api">API & Backend</option>
+                              <option value="software">Software Engineering</option>
+                              <option value="network">Networking</option>
+                              <option value="data">Data & Analytics</option>
+                              <option value="other">Other</option>
+                            </select>
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium mb-1">Logo SVG</label>
+                            <Input
+                              value={item.logoSvg || ''}
+                              onChange={(e) => handleSkillItemChange(item.id, 'logoSvg', e.target.value)}
+                              placeholder="<svg>...</svg>"
+                              className="w-full"
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center pt-6">
+                          <div 
+                            className="w-12 h-12 flex items-center justify-center"
+                            dangerouslySetInnerHTML={{ __html: item.logoSvg || '' }}
+                          />
+                          <h3 className="font-medium mt-2">{item.name}</h3>
+                          <span className="text-xs text-muted-foreground capitalize mt-1">
+                            {item.category || 'other'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {activeTab === 'settings' && (
+            <div>
+              <div className="bg-card shadow rounded-lg p-6 border border-border mb-6">
+                <h2 className="text-xl font-bold mb-4">Airtable Connection</h2>
+                <p className="mb-6">Connect your portfolio to Airtable to store and manage your content.</p>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Airtable API Key</label>
+                    <Input
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                      placeholder="patXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                      type="password"
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Create a <a href="https://airtable.com/create/tokens" target="_blank" rel="noopener noreferrer" className="text-aqua hover:underline">Personal Access Token</a> with scopes: data.records:read, data.records:write
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Airtable Base ID</label>
+                    <Input
+                      value={baseId}
+                      onChange={(e) => setBaseId(e.target.value)}
+                      placeholder="appXXXXXXXXXXXX"
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Find this in your Airtable API documentation. It starts with "app".
+                    </p>
+                  </div>
+                  
+                  <button
+                    onClick={connectToAirtable}
+                    disabled={isConfiguring || !apiKey || !baseId}
+                    className="px-4 py-2 bg-aqua text-white rounded-md flex items-center transition-colors hover:bg-aqua/90 disabled:opacity-70"
+                  >
+                    {isConfiguring ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Connecting...
+                      </>
+                    ) : isConnected ? (
+                      <>
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Update Connection
+                      </>
+                    ) : (
+                      <>
+                        <Database className="h-4 w-4 mr-2" />
+                        Connect to Airtable
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+              
+              {renderAirtableSchemaVisual()}
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+};
 
+export default BackOffice;
