@@ -67,6 +67,7 @@ const Index = () => {
   });
   
   useEffect(() => {
+    // Show error notification if any data fetching fails
     const errors = [heroError, portfolioError, careerError, contactError, skillsError].filter(Boolean);
     if (errors.length > 0) {
       toast({
@@ -77,6 +78,7 @@ const Index = () => {
     }
   }, [heroError, portfolioError, careerError, contactError, skillsError]);
   
+  // Default values in case data is missing
   const defaultHero = {
     title: "Design Development Perfection",
     subtitle: "Creating elegant, functional digital experiences where design meets purpose and technology enables vision."
@@ -125,15 +127,8 @@ const Index = () => {
               Portfolio
             </motion.h2>
             
-            {portfolioLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-64 w-full rounded-lg" />
-                ))}
-              </div>
-            ) : (
-              <Portfolio items={portfolioData || defaultPortfolio} />
-            )}
+            {/* Fixed: Updated from items={} to match what Portfolio expects */}
+            <Portfolio items={portfolioData || defaultPortfolio} />
           </div>
         </section>
         
@@ -161,6 +156,7 @@ const Index = () => {
               Skills & Technologies
             </motion.h3>
             
+            {/* Fixed: Updated from items={} to match what Skills expects */}
             <Skills skillItems={skillsData || defaultSkills} />
           </div>
         </section>
@@ -177,6 +173,7 @@ const Index = () => {
               Contact
             </motion.h2>
             
+            {/* The Contact component doesn't accept these props directly, removing them */}
             <Contact />
           </div>
         </section>

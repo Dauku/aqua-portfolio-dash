@@ -49,7 +49,7 @@
  * 6. Enter your API key and base ID in the application settings
  */
 
-const AIRTABLE_SCHEMA = {
+export const AIRTABLE_SCHEMA = {
   BASE_NAME: "Portfolio Website",
   TABLES: {
     HERO: {
