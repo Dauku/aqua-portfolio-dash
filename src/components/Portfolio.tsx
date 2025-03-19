@@ -5,9 +5,10 @@ import { useInView } from '@/utils/animations';
 import { ExternalLink, Github } from 'lucide-react';
 import { PortfolioItem } from '@/utils/airtable';
 
-type PortfolioProps = {
-  items?: PortfolioItem[];
-};
+// Define Portfolio component props interface
+export interface PortfolioProps {
+  items: PortfolioItem[];
+}
 
 const Portfolio = ({ items = [] }: PortfolioProps) => {
   // Use provided items or fallback to empty array
