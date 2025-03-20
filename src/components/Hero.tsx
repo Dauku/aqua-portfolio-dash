@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowDownCircle } from 'lucide-react';
 import { scrollToSection } from '@/utils/animations';
 
 interface HeroProps {
@@ -9,7 +8,7 @@ interface HeroProps {
   subtitle?: string;
 }
 
-const Hero = ({ title, subtitle }: HeroProps = {}) => {
+const Hero = ({ title, subtitle }: HeroProps) => {
   const [loaded, setLoaded] = useState(false);
   
   useEffect(() => {
@@ -74,21 +73,6 @@ const Hero = ({ title, subtitle }: HeroProps = {}) => {
             </button>
           </motion.div>
         </div>
-        
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={loaded ? { opacity: 1 } : {}}
-          transition={{ duration: 1, delay: 1.2 }}
-          className="absolute bottom-12 left-1/2 transform -translate-x-1/2"
-        >
-          <button 
-            className="flex items-center flex-col gap-2 text-sm font-medium opacity-70 hover:opacity-100 transition-opacity"
-            onClick={() => scrollToSection('career')}
-          >
-            <span>Scroll down</span>
-            <ArrowDownCircle size={24} className="animate-bounce" />
-          </button>
-        </motion.div>
       </div>
     </section>
   );

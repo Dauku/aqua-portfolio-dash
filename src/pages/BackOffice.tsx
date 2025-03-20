@@ -26,13 +26,28 @@ const BackOffice = () => {
     
     if (baseId) {
       airtableService.setBaseId(baseId);
+      localStorage.setItem('airtable_base_id', baseId);
       console.log('Base ID loaded from localStorage in BackOffice:', baseId);
     } else {
       // Set a default base ID if not already set
       const defaultBaseId = "appLvD79J5G25NeeQ";
       airtableService.setBaseId(defaultBaseId);
+      localStorage.setItem('airtable_base_id', defaultBaseId);
       console.log('Default Base ID set in BackOffice:', defaultBaseId);
     }
+    
+    // Make sure the data is saved to localStorage when it changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'airtable_api_key' && e.newValue) {
+        airtableService.setApiKey(e.newValue);
+        setCredentialsUpdated(true);
+      } else if (e.key === 'airtable_base_id' && e.newValue) {
+        airtableService.setBaseId(e.newValue);
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
   
   // Redirect to login if not authenticated
