@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import {
   Tabs,
@@ -36,7 +37,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "@/components/ui/use-toast"
-import { HeroData, PortfolioItem, CareerItem, ContactInfo, SkillItem } from '@/utils/airtable';
+import { HeroData, PortfolioItem, CareerItem, ContactInfo, SkillItem, airtableService } from '@/utils/airtable';
 import { HeroService, PortfolioService, CareerService, ContactService, SkillService } from '@/utils/airtable';
 import { Eye, EyeOff, Plug } from 'lucide-react';
 
@@ -569,417 +570,527 @@ const BackOfficeComponent = ({ airtableSchema }: BackOfficeProps) => {
           <TabsTrigger value="contact">Contact</TabsTrigger>
         </TabsList>
       
-      <TabsContent value="settings" className="space-y-6">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-bold">Settings</h2>
-          <p className="text-muted-foreground">Configure your portfolio settings.</p>
-        </div>
-        
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Airtable Connection</CardTitle>
-                <CardDescription>Connect your portfolio to Airtable to store and manage your content.</CardDescription>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Plug className="w-4 h-4" />
-                <span className={connectionStatus === 'Connected' ? 'text-green-500' : 'text-red-500'}>
-                  Current Status: {connectionStatus}
-                </span>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-1">
-              <Label htmlFor="api-key">Airtable API Key</Label>
-              <div className="relative">
-                <Input
-                  id="api-key"
-                  type={showApiKey ? "text" : "password"}
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="Enter your Airtable API key"
-                />
-                <button 
-                  type="button"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                  onClick={() => setShowApiKey(!showApiKey)}
-                >
-                  {showApiKey ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Create a Personal Access Token with scopes: data.records:read, data.records:write
-              </p>
-            </div>
-            
-            <div className="space-y-1">
-              <Label htmlFor="base-id">Airtable Base ID</Label>
-              <Input
-                id="base-id"
-                value={baseId}
-                onChange={(e) => setBaseId(e.target.value)}
-                placeholder="Enter your Airtable Base ID"
-              />
-              <p className="text-xs text-muted-foreground">
-                Find this in your Airtable API documentation. It starts with "app".
-              </p>
-            </div>
-            
-            <Button 
-              onClick={updateAirtableConnection} 
-              disabled={isLoading || !apiKey || !baseId}
-            >
-              Update Connection
-            </Button>
-          </CardContent>
-        </Card>
-      </TabsContent>
-      
-      <TabsContent value="hero" className="space-y-6">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-bold">Hero Section</h2>
-          <p className="text-muted-foreground">Update the main hero section of your portfolio.</p>
-        </div>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle>Hero Content</CardTitle>
-            <CardDescription>Edit the title and subtitle of your hero section.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="hero-title">Title</Label>
-              <Input
-                id="hero-title"
-                value={heroData.title}
-                onChange={(e) => setHeroData({ ...heroData, title: e.target.value })}
-                placeholder="Enter your title"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="hero-subtitle">Subtitle</Label>
-              <Textarea
-                id="hero-subtitle"
-                value={heroData.subtitle}
-                onChange={(e) => setHeroData({ ...heroData, subtitle: e.target.value })}
-                placeholder="Enter your subtitle"
-                rows={3}
-              />
-            </div>
-            
-            <Button onClick={saveHeroData} disabled={isLoading}>
-              Save Changes
-            </Button>
-          </CardContent>
-        </Card>
-      </TabsContent>
-      
-      <TabsContent value="portfolio" className="space-y-6">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-bold">Portfolio Items</h2>
-          <p className="text-muted-foreground">Manage your portfolio items.</p>
-        </div>
-        
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Portfolio Items</CardTitle>
-              <Button onClick={addPortfolioItem} disabled={isLoading}>Add Item</Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[400px] w-full rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[200px]">Title</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {portfolioItems.map(item => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.title}</TableCell>
-                      <TableCell>{item.description}</TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="secondary" size="sm" onClick={() => editPortfolioItem(item)} disabled={isLoading}>Edit</Button>
-                        <Button variant="destructive" size="sm" onClick={() => deletePortfolioItem(item.id)} disabled={isLoading}>Delete</Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-        
-        {showPortfolioForm && (
+        <TabsContent value="settings" className="space-y-6">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold">Settings</h2>
+            <p className="text-muted-foreground">Configure your portfolio settings.</p>
+          </div>
+          
           <Card>
             <CardHeader>
-              <CardTitle>{activePortfolioItem.id ? 'Edit Portfolio Item' : 'Add Portfolio Item'}</CardTitle>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Airtable Connection</CardTitle>
+                  <CardDescription>Connect your portfolio to Airtable to store and manage your content.</CardDescription>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Plug className="w-4 h-4" />
+                  <span className={connectionStatus === 'Connected' ? 'text-green-500' : 'text-red-500'}>
+                    Current Status: {connectionStatus}
+                  </span>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent>
-              <form className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="portfolio-title">Title</Label>
-                    <Input
-                      id="portfolio-title"
-                      value={activePortfolioItem.title}
-                      onChange={(e) => setActivePortfolioItem({...activePortfolioItem, title: e.target.value})}
-                      placeholder="Project title"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="portfolio-image">Image URL</Label>
-                    <Input
-                      id="portfolio-image"
-                      value={activePortfolioItem.image}
-                      onChange={(e) => setActivePortfolioItem({...activePortfolioItem, image: e.target.value})}
-                      placeholder="https://example.com/image.jpg"
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="portfolio-description">Description</Label>
-                  <Textarea
-                    id="portfolio-description"
-                    value={activePortfolioItem.description}
-                    onChange={(e) => setActivePortfolioItem({...activePortfolioItem, description: e.target.value})}
-                    placeholder="Short project description"
-                    rows={3}
+            <CardContent className="space-y-4">
+              <div className="space-y-1">
+                <Label htmlFor="api-key">Airtable API Key</Label>
+                <div className="relative">
+                  <Input
+                    id="api-key"
+                    type={showApiKey ? "text" : "password"}
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder="Enter your Airtable API key"
                   />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="portfolio-tags">Tags (comma separated)</Label>
-                    <Input
-                      id="portfolio-tags"
-                      value={Array.isArray(activePortfolioItem.tags) ? activePortfolioItem.tags.join(', ') : ''}
-                      onChange={(e) => setActivePortfolioItem({
-                        ...activePortfolioItem, 
-                        tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag)
-                      })}
-                      placeholder="React, Web, UI/UX"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="portfolio-link">Live Demo URL</Label>
-                    <Input
-                      id="portfolio-link"
-                      value={activePortfolioItem.link || ''}
-                      onChange={(e) => setActivePortfolioItem({...activePortfolioItem, link: e.target.value})}
-                      placeholder="https://example.com"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="portfolio-github">GitHub URL</Label>
-                    <Input
-                      id="portfolio-github"
-                      value={activePortfolioItem.github || ''}
-                      onChange={(e) => setActivePortfolioItem({...activePortfolioItem, github: e.target.value})}
-                      placeholder="https://github.com/username/repo"
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setShowPortfolioForm(false)}>Cancel</Button>
-                  <Button onClick={savePortfolioItem} disabled={isLoading}>Save</Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        )}
-      </TabsContent>
-      
-      <TabsContent value="career" className="space-y-6">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-bold">Career Journey</h2>
-          <p className="text-muted-foreground">Manage your career journey items.</p>
-        </div>
-        
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Career Items</CardTitle>
-              <Button onClick={addCareerItem} disabled={isLoading}>Add Item</Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[400px] w-full rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[200px]">Title</TableHead>
-                    <TableHead>Company</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {careerItems.map(item => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.title}</TableCell>
-                      <TableCell>{item.company}</TableCell>
-                      <TableCell>{item.type}</TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="secondary" size="sm" onClick={() => editCareerItem(item)} disabled={isLoading}>Edit</Button>
-                        <Button variant="destructive" size="sm" onClick={() => deleteCareerItem(item.id)} disabled={isLoading}>Delete</Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-        
-        {showCareerForm && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{activeCareerItem.id ? 'Edit Career Item' : 'Add Career Item'}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="career-title">Title</Label>
-                    <Input
-                      id="career-title"
-                      value={activeCareerItem.title}
-                      onChange={(e) => setActiveCareerItem({...activeCareerItem, title: e.target.value})}
-                      placeholder="Job title or degree"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="career-company">Company/Institution</Label>
-                    <Input
-                      id="career-company"
-                      value={activeCareerItem.company}
-                      onChange={(e) => setActiveCareerItem({...activeCareerItem, company: e.target.value})}
-                      placeholder="Company or university name"
-                    />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="career-location">Location</Label>
-                    <Input
-                      id="career-location"
-                      value={activeCareerItem.location}
-                      onChange={(e) => setActiveCareerItem({...activeCareerItem, location: e.target.value})}
-                      placeholder="City, Country"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="career-period">Period</Label>
-                    <Input
-                      id="career-period"
-                      value={activeCareerItem.period}
-                      onChange={(e) => setActiveCareerItem({...activeCareerItem, period: e.target.value})}
-                      placeholder="2020 - Present"
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="career-description">Description</Label>
-                  <Textarea
-                    id="career-description"
-                    value={activeCareerItem.description}
-                    onChange={(e) => setActiveCareerItem({...activeCareerItem, description: e.target.value})}
-                    placeholder="Describe your role and achievements"
-                    rows={3}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="career-type">Type</Label>
-                  <Select 
-                    value={activeCareerItem.type} 
-                    onValueChange={(value) => setActiveCareerItem({...activeCareerItem, type: value})}
+                  <button 
+                    type="button"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                    onClick={() => setShowApiKey(!showApiKey)}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="work">Work Experience</SelectItem>
-                      <SelectItem value="education">Education</SelectItem>
-                      <SelectItem value="achievement">Achievement</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    {showApiKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
-                
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setShowCareerForm(false)}>Cancel</Button>
-                  <Button onClick={saveCareerItem} disabled={isLoading}>Save</Button>
-                </div>
-              </form>
+                <p className="text-xs text-muted-foreground">
+                  Create a Personal Access Token with scopes: data.records:read, data.records:write
+                </p>
+              </div>
+              
+              <div className="space-y-1">
+                <Label htmlFor="base-id">Airtable Base ID</Label>
+                <Input
+                  id="base-id"
+                  value={baseId}
+                  onChange={(e) => setBaseId(e.target.value)}
+                  placeholder="Enter your Airtable Base ID"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Find this in your Airtable API documentation. It starts with "app".
+                </p>
+              </div>
+              
+              <Button 
+                onClick={updateAirtableConnection} 
+                disabled={isLoading || !apiKey || !baseId}
+              >
+                Update Connection
+              </Button>
             </CardContent>
           </Card>
-        )}
-      </TabsContent>
-      
-      <TabsContent value="skills" className="space-y-6">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-bold">Skills & Technologies</h2>
-          <p className="text-muted-foreground">Manage your skills and technologies.</p>
-        </div>
+        </TabsContent>
         
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Skills</CardTitle>
-              <Button onClick={addSkillItem} disabled={isLoading}>Add Skill</Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[400px] w-full rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[200px]">Name</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {skillItems.map(item => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.name}</TableCell>
-                      <TableCell>{item.category}</TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="secondary" size="sm" onClick={() => editSkillItem(item)} disabled={isLoading}>Edit</Button>
-                        <Button variant="destructive" size="sm" onClick={() => deleteSkillItem(item.id)} disabled={isLoading}>Delete</Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-        
-        {showSkillForm && (
+        <TabsContent value="hero" className="space-y-6">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold">Hero Section</h2>
+            <p className="text-muted-foreground">Update the main hero section of your portfolio.</p>
+          </div>
+          
           <Card>
             <CardHeader>
-              <CardTitle>{activeSkillItem.id ? 'Edit Skill' : 'Add Skill'}</CardTitle>
+              <CardTitle>Hero Content</CardTitle>
+              <CardDescription>Edit the title and subtitle of your hero section.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="hero-title">Title</Label>
+                <Input
+                  id="hero-title"
+                  value={heroData.title}
+                  onChange={(e) => setHeroData({ ...heroData, title: e.target.value })}
+                  placeholder="Enter your title"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="hero-subtitle">Subtitle</Label>
+                <Textarea
+                  id="hero-subtitle"
+                  value={heroData.subtitle}
+                  onChange={(e) => setHeroData({ ...heroData, subtitle: e.target.value })}
+                  placeholder="Enter your subtitle"
+                  rows={3}
+                />
+              </div>
+              
+              <Button onClick={saveHeroData} disabled={isLoading}>
+                Save Changes
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="portfolio" className="space-y-6">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold">Portfolio Items</h2>
+            <p className="text-muted-foreground">Manage your portfolio items.</p>
+          </div>
+          
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Portfolio Items</CardTitle>
+                <Button onClick={addPortfolioItem} disabled={isLoading}>Add Item</Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[400px] w-full rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[200px]">Title</TableHead>
+                      <TableHead>Description</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {portfolioItems.map(item => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium">{item.title}</TableCell>
+                        <TableCell>{item.description}</TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="secondary" size="sm" onClick={() => editPortfolioItem(item)} disabled={isLoading}>Edit</Button>
+                          <Button variant="destructive" size="sm" onClick={() => deletePortfolioItem(item.id)} disabled={isLoading}>Delete</Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+          
+          {showPortfolioForm && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{activePortfolioItem.id ? 'Edit Portfolio Item' : 'Add Portfolio Item'}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="portfolio-title">Title</Label>
+                      <Input
+                        id="portfolio-title"
+                        value={activePortfolioItem.title}
+                        onChange={(e) => setActivePortfolioItem({...activePortfolioItem, title: e.target.value})}
+                        placeholder="Project title"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="portfolio-image">Image URL</Label>
+                      <Input
+                        id="portfolio-image"
+                        value={activePortfolioItem.image}
+                        onChange={(e) => setActivePortfolioItem({...activePortfolioItem, image: e.target.value})}
+                        placeholder="https://example.com/image.jpg"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="portfolio-description">Description</Label>
+                    <Textarea
+                      id="portfolio-description"
+                      value={activePortfolioItem.description}
+                      onChange={(e) => setActivePortfolioItem({...activePortfolioItem, description: e.target.value})}
+                      placeholder="Short project description"
+                      rows={3}
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="portfolio-tags">Tags (comma separated)</Label>
+                      <Input
+                        id="portfolio-tags"
+                        value={Array.isArray(activePortfolioItem.tags) ? activePortfolioItem.tags.join(', ') : ''}
+                        onChange={(e) => setActivePortfolioItem({
+                          ...activePortfolioItem, 
+                          tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag)
+                        })}
+                        placeholder="React, Web, UI/UX"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="portfolio-link">Live Demo URL</Label>
+                      <Input
+                        id="portfolio-link"
+                        value={activePortfolioItem.link || ''}
+                        onChange={(e) => setActivePortfolioItem({...activePortfolioItem, link: e.target.value})}
+                        placeholder="https://example.com"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="portfolio-github">GitHub URL</Label>
+                      <Input
+                        id="portfolio-github"
+                        value={activePortfolioItem.github || ''}
+                        onChange={(e) => setActivePortfolioItem({...activePortfolioItem, github: e.target.value})}
+                        placeholder="https://github.com/username/repo"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={() => setShowPortfolioForm(false)}>Cancel</Button>
+                    <Button onClick={savePortfolioItem} disabled={isLoading}>Save</Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="career" className="space-y-6">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold">Career Journey</h2>
+            <p className="text-muted-foreground">Manage your career journey items.</p>
+          </div>
+          
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Career Items</CardTitle>
+                <Button onClick={addCareerItem} disabled={isLoading}>Add Item</Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[400px] w-full rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[200px]">Title</TableHead>
+                      <TableHead>Company</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {careerItems.map(item => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium">{item.title}</TableCell>
+                        <TableCell>{item.company}</TableCell>
+                        <TableCell>{item.type}</TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="secondary" size="sm" onClick={() => editCareerItem(item)} disabled={isLoading}>Edit</Button>
+                          <Button variant="destructive" size="sm" onClick={() => deleteCareerItem(item.id)} disabled={isLoading}>Delete</Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+          
+          {showCareerForm && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{activeCareerItem.id ? 'Edit Career Item' : 'Add Career Item'}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="career-title">Title</Label>
+                      <Input
+                        id="career-title"
+                        value={activeCareerItem.title}
+                        onChange={(e) => setActiveCareerItem({...activeCareerItem, title: e.target.value})}
+                        placeholder="Job title or degree"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="career-company">Company/Institution</Label>
+                      <Input
+                        id="career-company"
+                        value={activeCareerItem.company}
+                        onChange={(e) => setActiveCareerItem({...activeCareerItem, company: e.target.value})}
+                        placeholder="Company or university name"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="career-location">Location</Label>
+                      <Input
+                        id="career-location"
+                        value={activeCareerItem.location}
+                        onChange={(e) => setActiveCareerItem({...activeCareerItem, location: e.target.value})}
+                        placeholder="City, Country"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="career-period">Period</Label>
+                      <Input
+                        id="career-period"
+                        value={activeCareerItem.period}
+                        onChange={(e) => setActiveCareerItem({...activeCareerItem, period: e.target.value})}
+                        placeholder="2020 - Present"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="career-description">Description</Label>
+                    <Textarea
+                      id="career-description"
+                      value={activeCareerItem.description}
+                      onChange={(e) => setActiveCareerItem({...activeCareerItem, description: e.target.value})}
+                      placeholder="Describe your role and achievements"
+                      rows={3}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="career-type">Type</Label>
+                    <Select 
+                      value={activeCareerItem.type} 
+                      onValueChange={(value) => setActiveCareerItem({...activeCareerItem, type: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="work">Work Experience</SelectItem>
+                        <SelectItem value="education">Education</SelectItem>
+                        <SelectItem value="achievement">Achievement</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={() => setShowCareerForm(false)}>Cancel</Button>
+                    <Button onClick={saveCareerItem} disabled={isLoading}>Save</Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="skills" className="space-y-6">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold">Skills & Technologies</h2>
+            <p className="text-muted-foreground">Manage your skills and technologies.</p>
+          </div>
+          
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Skills</CardTitle>
+                <Button onClick={addSkillItem} disabled={isLoading}>Add Skill</Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[400px] w-full rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[200px]">Name</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {skillItems.map(item => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium">{item.name}</TableCell>
+                        <TableCell>{item.category}</TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="secondary" size="sm" onClick={() => editSkillItem(item)} disabled={isLoading}>Edit</Button>
+                          <Button variant="destructive" size="sm" onClick={() => deleteSkillItem(item.id)} disabled={isLoading}>Delete</Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+          
+          {showSkillForm && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{activeSkillItem.id ? 'Edit Skill' : 'Add Skill'}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="skill-name">Skill Name</Label>
+                      <Input
+                        id="skill-name"
+                        value={activeSkillItem.name}
+                        onChange={(e) => setActiveSkillItem({...activeSkillItem, name: e.target.value})}
+                        placeholder="React"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="skill-category">Category</Label>
+                      <Select 
+                        value={activeSkillItem.category} 
+                        onValueChange={(value) => setActiveSkillItem({...activeSkillItem, category: value})}
+                      >
+                        <SelectTrigger id="skill-category">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="web">Web Development</SelectItem>
+                          <SelectItem value="api">API</SelectItem>
+                          <SelectItem value="software">Software Development</SelectItem>
+                          <SelectItem value="network">Networking</SelectItem>
+                          <SelectItem value="data">Data Science</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="skill-logo">Logo SVG</Label>
+                    <Textarea
+                      id="skill-logo"
+                      value={activeSkillItem.logoSvg || ''}
+                      onChange={(e) => setActiveSkillItem({...activeSkillItem, logoSvg: e.target.value})}
+                      placeholder="<svg>...</svg>"
+                      rows={5}
+                    />
+                    <p className="text-xs text-muted-foreground">Paste SVG code for the skill logo. Make sure it's valid SVG.</p>
+                  </div>
+                  
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={() => setShowSkillForm(false)}>Cancel</Button>
+                    <Button onClick={saveSkillItem} disabled={isLoading}>Save</Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="contact" className="space-y-6">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold">Contact Information</h2>
+            <p className="text-muted-foreground">Update your contact information.</p>
+          </div>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Contact Details</CardTitle>
+              <CardDescription>Enter your contact information for visitors to reach you.</CardDescription>
             </CardHeader>
             <CardContent>
               <form className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="skill-name">Skill Name</Label
+                    <Label htmlFor="contact-email">Email</Label>
+                    <Input
+                      id="contact-email"
+                      type="email"
+                      value={contactInfo.email}
+                      onChange={(e) => setContactInfo({...contactInfo, email: e.target.value})}
+                      placeholder="your.email@example.com"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="contact-phone">Phone</Label>
+                    <Input
+                      id="contact-phone"
+                      value={contactInfo.phone}
+                      onChange={(e) => setContactInfo({...contactInfo, phone: e.target.value})}
+                      placeholder="+1 (234) 567-890"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="contact-location">Location</Label>
+                  <Input
+                    id="contact-location"
+                    value={contactInfo.location}
+                    onChange={(e) => setContactInfo({...contactInfo, location: e.target.value})}
+                    placeholder="City, Country"
+                  />
+                </div>
+                
+                <Button onClick={saveContactInfo} disabled={isLoading}>
+                  Save Contact Information
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default BackOfficeComponent;

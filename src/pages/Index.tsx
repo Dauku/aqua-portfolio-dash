@@ -2,7 +2,14 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
-import { HeroService, ContactService, SkillService, PortfolioService, CareerService, airtableService } from '@/utils/airtable';
+import { 
+  HeroService, 
+  ContactService, 
+  SkillService, 
+  PortfolioService, 
+  CareerService, 
+  airtableService 
+} from '@/utils/airtable';
 import { toast } from '@/components/ui/use-toast';
 
 import Navbar from '@/components/Navbar';
