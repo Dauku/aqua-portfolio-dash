@@ -24,11 +24,11 @@ const Skills = ({ skillItems = [] }: SkillsProps) => {
   
   if (loading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4 my-8">
-        {[...Array(12)].map((_, i) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 my-8">
+        {[...Array(8)].map((_, i) => (
           <div key={i} className="flex flex-col items-center">
-            <Skeleton className="w-14 h-14 rounded-md" />
-            <Skeleton className="w-16 h-4 mt-2" />
+            <Skeleton className="w-[150px] h-[150px] rounded-md" />
+            <Skeleton className="w-24 h-4 mt-2" />
           </div>
         ))}
       </div>
@@ -38,22 +38,24 @@ const Skills = ({ skillItems = [] }: SkillsProps) => {
   // Show placeholder when no skills are available
   if (skills.length === 0) {
     return (
-      <div className="text-center py-10 border border-dashed rounded-lg bg-muted/30">
+      <div className="text-center py-12 border border-dashed rounded-lg bg-muted/30">
         <h3 className="text-xl font-medium text-muted-foreground">No skills data available</h3>
-        <p className="mt-2 text-sm text-muted-foreground">Skills information will appear here once added.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Add skills information in the Airtable "Skills" table to display your expertise here.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4 my-8">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 my-8">
       {skills.map((skill, index) => (
         <div 
           key={skill.id || index} 
           className="group flex flex-col items-center"
         >
           <div 
-            className="w-14 h-14 rounded-md flex items-center justify-center border border-border p-2 bg-card hover:bg-primary/10 transition-colors"
+            className="w-[150px] h-[150px] rounded-md flex items-center justify-center border border-border p-4 bg-card hover:bg-primary/10 transition-colors"
             dangerouslySetInnerHTML={{ __html: skill.logoSvg || '' }}
           />
           <span className="mt-2 text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">

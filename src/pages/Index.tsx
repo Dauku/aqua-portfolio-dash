@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
-import { HeroService, ContactService, SkillService, airtableService } from '@/utils/airtable';
+import { HeroService, ContactService, SkillService, PortfolioService, CareerService, airtableService } from '@/utils/airtable';
 import { toast } from '@/components/ui/use-toast';
 
 import Navbar from '@/components/Navbar';
@@ -10,8 +10,9 @@ import Hero from '@/components/Hero';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import Skills from '@/components/Skills';
-import { Skeleton } from '@/components/ui/skeleton';
 import { CareerJourney } from '@/components/CareerJourney';
+import Portfolio from '@/components/Portfolio';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Index = () => {
   // Initialize airtable service with stored credentials
@@ -80,10 +81,20 @@ const Index = () => {
     queryFn: () => SkillService.getAll(),
     retry: 1
   });
+
+  const {
+    data: portfolioData,
+    isLoading: portfolioLoading,
+    error: portfolioError
+  } = useQuery({
+    queryKey: ['portfolio'],
+    queryFn: () => PortfolioService.getAll(),
+    retry: 1
+  });
   
   useEffect(() => {
     // Show error notification if any data fetching fails
-    const errors = [heroError, skillsError, contactError].filter(Boolean);
+    const errors = [heroError, skillsError, contactError, portfolioError].filter(Boolean);
     if (errors.length > 0) {
       toast({
         title: "Error loading data",
@@ -91,7 +102,7 @@ const Index = () => {
         variant: "destructive",
       });
     }
-  }, [heroError, skillsError, contactError]);
+  }, [heroError, skillsError, contactError, portfolioError]);
   
   return (
     <div className="bg-background text-foreground">
@@ -142,28 +153,33 @@ const Index = () => {
           </div>
         </section>
         
-        {/* Contact section - Only show if contact data is available */}
-        {!contactLoading && contactData && (
-          <section id="contact" className="py-20">
-            <div className="container px-4">
-              <motion.h2 
-                className="text-3xl md:text-4xl font-bold mb-8 text-center"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5 }}
-              >
-                Contact Me
-              </motion.h2>
-              
-              <Contact 
-                email={contactData?.email || "hello@example.com"} 
-                phone={contactData?.phone || "+1 (234) 567-890"} 
-                location={contactData?.location || "San Francisco, CA"} 
-              />
-            </div>
-          </section>
-        )}
+        {/* Portfolio section */}
+        <section id="portfolio" className="py-20">
+          <div className="container px-4">
+            <Portfolio items={portfolioData || []} />
+          </div>
+        </section>
+        
+        {/* Contact section */}
+        <section id="contact" className="py-20 bg-muted/20">
+          <div className="container px-4">
+            <motion.h2 
+              className="text-3xl md:text-4xl font-bold mb-8 text-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              Contact Me
+            </motion.h2>
+            
+            <Contact 
+              email={contactData?.email || "hello@example.com"} 
+              phone={contactData?.phone || "+1 (234) 567-890"} 
+              location={contactData?.location || "San Francisco, CA"} 
+            />
+          </div>
+        </section>
       </main>
       
       <Footer />

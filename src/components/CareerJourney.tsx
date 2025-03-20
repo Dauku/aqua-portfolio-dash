@@ -47,9 +47,11 @@ export const CareerJourney = () => {
   
   if (error || !careerItems || careerItems.length === 0) {
     return (
-      <div className="text-center py-20 border border-dashed rounded-lg bg-muted/30">
+      <div className="text-center py-12 border border-dashed rounded-lg bg-muted/30">
         <h3 className="text-xl font-medium text-muted-foreground">No career data available</h3>
-        <p className="mt-2 text-sm text-muted-foreground">Career information will appear here once added.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Add career information in the Airtable "Career" table to display your professional journey here.
+        </p>
       </div>
     );
   }
