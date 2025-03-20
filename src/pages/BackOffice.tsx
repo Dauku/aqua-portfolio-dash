@@ -5,6 +5,7 @@ import BackOfficeComponent from '@/components/BackOffice';
 import { useAuthStore } from '@/utils/auth';
 import { airtableService } from '@/utils/airtable';
 import AIRTABLE_SCHEMA from '@/utils/airtableSchema';
+import { toast } from '@/components/ui/use-toast';
 
 const BackOffice = () => {
   const { isAuthenticated } = useAuthStore();
@@ -12,11 +13,16 @@ const BackOffice = () => {
   
   // Set the Airtable API key when the component mounts (if not already set)
   useEffect(() => {
-    // This is a security risk in a real application but we're doing it for the demo
-    // In a real app, this would be handled securely on the server side
+    // Check if API key is already set
     if (!airtableService.getApiKey()) {
       // Using the API key provided by the user
-      airtableService.setApiKey("patLN8RdI0YEYkkeD.5697d7f1b8842e38b1ee8e3f3ce4fe4ecabc7a4699333a91e7787fe9715b2b29");
+      const apiKey = "patLN8RdI0YEYkkeD.5697d7f1b8842e38b1ee8e3f3ce4fe4ecabc7a4699333a91e7787fe9715b2b29";
+      airtableService.setApiKey(apiKey);
+      
+      toast({
+        title: "Airtable API key set",
+        description: "The application is now connected to Airtable.",
+      });
     }
     
     // Set a default base ID if not already set
@@ -25,6 +31,7 @@ const BackOffice = () => {
     }
   }, []);
   
+  // Redirect to login if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');

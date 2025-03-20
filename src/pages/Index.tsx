@@ -3,17 +3,16 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
-import { HeroService, PortfolioService, CareerService, ContactService, SkillService } from '@/utils/airtable';
+import { HeroService, ContactService, SkillService } from '@/utils/airtable';
 import { toast } from '@/components/ui/use-toast';
 
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
-import Portfolio from '@/components/Portfolio';
-import Career from '@/components/Career';
 import Contact from '@/components/Contact';
 import Footer from '@/components/Footer';
 import Skills from '@/components/Skills';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CareerJourney } from '@/components/CareerJourney';
 
 const Index = () => {
   const { 
@@ -23,26 +22,6 @@ const Index = () => {
   } = useQuery({
     queryKey: ['hero'],
     queryFn: () => HeroService.get(),
-    retry: 1
-  });
-  
-  const { 
-    data: portfolioData, 
-    isLoading: portfolioLoading,
-    error: portfolioError
-  } = useQuery({
-    queryKey: ['portfolio'],
-    queryFn: () => PortfolioService.getAll(),
-    retry: 1
-  });
-  
-  const { 
-    data: careerData, 
-    isLoading: careerLoading,
-    error: careerError
-  } = useQuery({
-    queryKey: ['career'],
-    queryFn: () => CareerService.getAll(),
     retry: 1
   });
   
@@ -68,7 +47,7 @@ const Index = () => {
   
   useEffect(() => {
     // Show error notification if any data fetching fails
-    const errors = [heroError, portfolioError, careerError, contactError, skillsError].filter(Boolean);
+    const errors = [heroError, contactError, skillsError].filter(Boolean);
     if (errors.length > 0) {
       toast({
         title: "Error loading data",
@@ -76,7 +55,7 @@ const Index = () => {
         variant: "destructive",
       });
     }
-  }, [heroError, portfolioError, careerError, contactError, skillsError]);
+  }, [heroError, contactError, skillsError]);
   
   return (
     <div className="bg-background text-foreground">
@@ -97,22 +76,7 @@ const Index = () => {
           )}
         </section>
         
-        <section id="portfolio" className="py-20">
-          <div className="container px-4">
-            <motion.h2 
-              className="text-3xl md:text-4xl font-bold mb-8 text-center"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              Portfolio
-            </motion.h2>
-            
-            <Portfolio portfolioItems={portfolioData || []} />
-          </div>
-        </section>
-        
+        {/* Career Journey section */}
         <section id="career" className="py-20 bg-muted/30">
           <div className="container px-4">
             <motion.h2 
@@ -125,41 +89,49 @@ const Index = () => {
               Career & Skills
             </motion.h2>
             
-            <Career careerItems={careerData || []} />
+            <CareerJourney />
             
-            <motion.h3 
-              className="text-2xl font-bold mt-16 mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              Skills & Technologies
-            </motion.h3>
-            
-            <Skills skillItems={skillsData || []} />
+            {/* Skills & Expertise section */}
+            {!skillsLoading && skillsData && skillsData.length > 0 && (
+              <>
+                <motion.h3 
+                  className="text-2xl font-bold mt-16 mb-8"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                  Skills & Technologies
+                </motion.h3>
+                
+                <Skills skillItems={skillsData || []} />
+              </>
+            )}
           </div>
         </section>
         
-        <section id="contact" className="py-20">
-          <div className="container px-4">
-            <motion.h2 
-              className="text-3xl md:text-4xl font-bold mb-8 text-center"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              Contact
-            </motion.h2>
-            
-            <Contact 
-              email={contactData?.email || "hello@example.com"} 
-              phone={contactData?.phone || "+1 (234) 567-890"} 
-              location={contactData?.location || "San Francisco, CA"} 
-            />
-          </div>
-        </section>
+        {/* Contact section - Only show if contact data is available */}
+        {!contactLoading && contactData && (
+          <section id="contact" className="py-20">
+            <div className="container px-4">
+              <motion.h2 
+                className="text-3xl md:text-4xl font-bold mb-8 text-center"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+              >
+                Contact Me
+              </motion.h2>
+              
+              <Contact 
+                email={contactData?.email || "hello@example.com"} 
+                phone={contactData?.phone || "+1 (234) 567-890"} 
+                location={contactData?.location || "San Francisco, CA"} 
+              />
+            </div>
+          </section>
+        )}
       </main>
       
       <Footer />

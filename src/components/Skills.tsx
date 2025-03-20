@@ -16,28 +16,11 @@ const Skills = ({ skillItems = [] }: SkillsProps) => {
       setSkills(skillItems);
       setLoading(false);
     } else {
-      // Default skills if none are provided
-      setSkills([
-        {
-          name: 'HTML',
-          category: 'web',
-          logoSvg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16l-3-9h20l-3 9h-6l2-6h-6l2 6z"/></svg>'
-        },
-        {
-          name: 'CSS',
-          category: 'web',
-          logoSvg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 13h6m-3-3v6m-6-9h12v10H6z"/></svg>'
-        }
-      ]);
+      // No default skills, leave empty for placeholder
+      setSkills([]);
       setLoading(false);
     }
   }, [skillItems]);
-  
-  // Helper function to sort skills by category
-  const sortedSkills = [...skills].sort((a, b) => {
-    const order = { web: 1, api: 2, software: 3, network: 4, data: 5, other: 6 };
-    return order[a.category as keyof typeof order] - order[b.category as keyof typeof order];
-  });
   
   if (loading) {
     return (
@@ -52,9 +35,19 @@ const Skills = ({ skillItems = [] }: SkillsProps) => {
     );
   }
 
+  // Show placeholder when no skills are available
+  if (skills.length === 0) {
+    return (
+      <div className="text-center py-10 border border-dashed rounded-lg bg-muted/30">
+        <h3 className="text-xl font-medium text-muted-foreground">No skills data available</h3>
+        <p className="mt-2 text-sm text-muted-foreground">Skills information will appear here once added.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4 my-8">
-      {sortedSkills.map((skill, index) => (
+      {skills.map((skill, index) => (
         <div 
           key={skill.id || index} 
           className="group flex flex-col items-center"
