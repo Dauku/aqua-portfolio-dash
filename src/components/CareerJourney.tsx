@@ -47,17 +47,34 @@ export const CareerJourney = () => {
   
   if (error || !careerItems || careerItems.length === 0) {
     return (
-      <div className="text-center py-12 border border-dashed rounded-lg bg-muted/30">
-        <h3 className="text-xl font-medium text-muted-foreground">No career data available</h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Add career information in the Airtable "Career" table to display your professional journey here.
-        </p>
-      </div>
+      <section id="career">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16"
+        >
+          <h3 className="section-title text-2xl font-bold mb-4">
+            <span className="bg-aqua/10 px-4 py-1 rounded-md">Career Journey</span>
+          </h3>
+          <p className="section-subtitle text-muted-foreground">
+            My professional path and the skills I've developed along the way
+          </p>
+        </motion.div>
+      
+        <div className="text-center py-12 border border-dashed rounded-lg bg-muted/30">
+          <h3 className="text-xl font-medium text-muted-foreground">No career data available</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Add career information in the Airtable "Career" table to display your professional journey here.
+          </p>
+        </div>
+      </section>
     );
   }
   
   return (
-    <>
+    <section id="career">
       <motion.div
         ref={ref as React.RefObject<HTMLDivElement>}
         initial={{ opacity: 0, y: 30 }}
@@ -99,7 +116,7 @@ export const CareerJourney = () => {
           <TimelineItem key={item.id} item={item} index={index} isEven={index % 2 === 0} />
         ))}
       </div>
-    </>
+    </section>
   );
 };
 

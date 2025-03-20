@@ -16,7 +16,7 @@ const Skills = ({ skillItems = [] }: SkillsProps) => {
       setSkills(skillItems);
       setLoading(false);
     } else {
-      // No default skills, leave empty for placeholder
+      // No skills data available
       setSkills([]);
       setLoading(false);
     }

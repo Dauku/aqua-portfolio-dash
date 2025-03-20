@@ -26,7 +26,6 @@ const BackOffice = () => {
     
     if (baseId) {
       airtableService.setBaseId(baseId);
-      localStorage.setItem('airtable_base_id', baseId);
       console.log('Base ID loaded from localStorage in BackOffice:', baseId);
     } else {
       // Set a default base ID if not already set
