@@ -4,10 +4,12 @@ import { motion } from 'framer-motion';
 import { ArrowDownCircle } from 'lucide-react';
 import { scrollToSection } from '@/utils/animations';
 
-// Importing framer-motion for better animations
-<lov-add-dependency>framer-motion@11.0.3</lov-add-dependency>
+interface HeroProps {
+  title?: string;
+  subtitle?: string;
+}
 
-const Hero = () => {
+const Hero = ({ title, subtitle }: HeroProps = {}) => {
   const [loaded, setLoaded] = useState(false);
   
   useEffect(() => {
@@ -30,9 +32,15 @@ const Hero = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             <h1 className="text-5xl md:text-7xl font-bold mb-6">
-              <span className="block">Design</span>
-              <span className="text-aqua">Development</span>
-              <span className="block">Perfection</span>
+              {title ? (
+                <span>{title}</span>
+              ) : (
+                <>
+                  <span className="block">Design</span>
+                  <span className="text-aqua">Development</span>
+                  <span className="block">Perfection</span>
+                </>
+              )}
             </h1>
           </motion.div>
           
@@ -42,7 +50,7 @@ const Hero = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
           >
             <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-              Creating elegant, functional digital experiences where design meets purpose and technology enables vision.
+              {subtitle || "Creating elegant, functional digital experiences where design meets purpose and technology enables vision."}
             </p>
           </motion.div>
           
@@ -54,7 +62,7 @@ const Hero = () => {
           >
             <button
               className="px-8 py-3 bg-aqua text-white rounded-md font-medium transition-all hover:bg-aqua/90 hover:shadow-lg"
-              onClick={() => scrollToSection('portfolio')}
+              onClick={() => scrollToSection('career')}
             >
               View Work
             </button>
@@ -75,7 +83,7 @@ const Hero = () => {
         >
           <button 
             className="flex items-center flex-col gap-2 text-sm font-medium opacity-70 hover:opacity-100 transition-opacity"
-            onClick={() => scrollToSection('portfolio')}
+            onClick={() => scrollToSection('career')}
           >
             <span>Scroll down</span>
             <ArrowDownCircle size={24} className="animate-bounce" />

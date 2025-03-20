@@ -1,6 +1,5 @@
 
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { HeroService, ContactService, SkillService } from '@/utils/airtable';
@@ -70,8 +69,8 @@ const Index = () => {
             </div>
           ) : (
             <Hero 
-              title={heroData?.title || "Design Development Perfection"} 
-              subtitle={heroData?.subtitle || "Creating elegant, functional digital experiences where design meets purpose and technology enables vision."} 
+              title={heroData?.title} 
+              subtitle={heroData?.subtitle} 
             />
           )}
         </section>
