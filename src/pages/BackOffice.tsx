@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BackOfficeComponent from '@/components/BackOffice';
 import { useAuthStore } from '@/utils/auth';
@@ -10,24 +10,28 @@ import { toast } from '@/components/ui/use-toast';
 const BackOffice = () => {
   const { isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
+  const [credentialsUpdated, setCredentialsUpdated] = useState(false);
   
   // Set the Airtable API key when the component mounts (if not already set)
   useEffect(() => {
     // Check if API key is already set
-    if (!airtableService.getApiKey()) {
-      // Using the API key provided by the user
-      const apiKey = "patLN8RdI0YEYkkeD.5697d7f1b8842e38b1ee8e3f3ce4fe4ecabc7a4699333a91e7787fe9715b2b29";
+    const apiKey = localStorage.getItem('airtable_api_key');
+    const baseId = localStorage.getItem('airtable_base_id');
+
+    if (apiKey) {
       airtableService.setApiKey(apiKey);
-      
-      toast({
-        title: "Airtable API key set",
-        description: "The application is now connected to Airtable.",
-      });
+      setCredentialsUpdated(true);
+      console.log('API key loaded from localStorage in BackOffice');
     }
     
-    // Set a default base ID if not already set
-    if (!airtableService.getBaseId()) {
-      airtableService.setBaseId("appLvD79J5G25NeeQ");
+    if (baseId) {
+      airtableService.setBaseId(baseId);
+      console.log('Base ID loaded from localStorage in BackOffice:', baseId);
+    } else {
+      // Set a default base ID if not already set
+      const defaultBaseId = "appLvD79J5G25NeeQ";
+      airtableService.setBaseId(defaultBaseId);
+      console.log('Default Base ID set in BackOffice:', defaultBaseId);
     }
   }, []);
   

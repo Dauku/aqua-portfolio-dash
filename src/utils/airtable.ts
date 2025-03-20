@@ -10,20 +10,23 @@ class AirtableService {
   private baseId: string;
   
   constructor() {
-    // In a production app, this would be stored in environment variables
-    // For now, we'll store it in localStorage to keep it somewhat protected
+    // Initialize with values from localStorage if available
     this.apiKey = localStorage.getItem('airtable_api_key') || '';
-    this.baseId = 'appXXXXXXXXXXXXXX'; // Replace with your actual base ID
+    this.baseId = localStorage.getItem('airtable_base_id') || 'appXXXXXXXXXXXXXX';
+    
+    console.log('AirtableService initialized with baseId:', this.baseId ? 'Set' : 'Not set');
   }
   
   setApiKey(key: string) {
     this.apiKey = key;
     localStorage.setItem('airtable_api_key', key);
+    console.log('API key has been set');
   }
   
   setBaseId(id: string) {
     this.baseId = id;
     localStorage.setItem('airtable_base_id', id);
+    console.log('Base ID has been set:', id);
   }
   
   getApiKey() {
@@ -38,6 +41,12 @@ class AirtableService {
     if (!this.apiKey) {
       throw new Error('API key not set');
     }
+    
+    if (!this.baseId || this.baseId === 'appXXXXXXXXXXXXXX') {
+      throw new Error('Valid Airtable Base ID not set');
+    }
+    
+    console.log(`Fetching records from ${tableName} using baseId: ${this.baseId}`);
     
     const response = await fetch(
       `https://api.airtable.com/v0/${this.baseId}/${encodeURIComponent(tableName)}`,
